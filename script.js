@@ -95,46 +95,92 @@ class SportsLeaderboard {
     }
 
     createConfetti() {
-        const confettiContainer = document.createElement('div');
-        confettiContainer.className = 'confetti-container';
-        document.body.appendChild(confettiContainer);
-        
-        // Create confetti pieces from both bottom corners
-        for (let i = 0; i < 50; i++) {
-            this.createConfettiPiece(confettiContainer, 'left');
-            this.createConfettiPiece(confettiContainer, 'right');
-        }
-        
-        // Remove confetti container after animation
-        setTimeout(() => {
-            if (document.body.contains(confettiContainer)) {
-                document.body.removeChild(confettiContainer);
-            }
-        }, 3000);
-    }
+        // Use tsParticles confetti from both bottom corners
+        tsParticles.load({ 
+            id: "tsparticles", 
+            options: { 
+                "fullScreen": { "zIndex": 999 }, 
+                "particles": { 
+                    "number": { "value": 0 }, 
+                    "color": { 
+                        "value": [ "#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4" ] 
+                    }, 
+                    "shape": { 
+                        "type": [ "circle", "square", "triangle" ], 
+                        "options": {} 
+                    }, 
+                    "opacity": { 
+                        "value": { "min": 0, "max": 1 }, 
+                        "animation": { 
+                            "enable": true, 
+                            "speed": 2, 
+                            "startValue": "max", 
+                            "destroy": "min" 
+                        } 
+                    }, 
+                    "size": { 
+                        "value": { "min": 3, "max": 6 } 
+                    }, 
+                    "links": { "enable": false }, 
+                    "life": { 
+                        "duration": { "sync": true, "value": 5 }, 
+                        "count": 1 
+                    }, 
+                    "move": { 
+                        "enable": true, 
+                        "gravity": { "enable": true, "acceleration": 10 }, 
+                        "speed": { "min": 10, "max": 20 }, 
+                        "decay": 0.1, 
+                        "direction": "none", 
+                        "straight": false, 
+                        "outModes": { "default": "destroy", "top": "none" } 
+                    }, 
+                    "rotate": { 
+                        "value": { "min": 0, "max": 360 }, 
+                        "direction": "random", 
+                        "move": true, 
+                        "animation": { "enable": true, "speed": 60 } 
+                    }, 
+                    "tilt": { 
+                        "direction": "random", 
+                        "enable": true, 
+                        "move": true, 
+                        "value": { "min": 0, "max": 360 }, 
+                        "animation": { "enable": true, "speed": 60 } 
+                    }, 
+                    "roll": { 
+                        "darken": { "enable": true, "value": 25 }, 
+                        "enable": true, 
+                        "speed": { "min": 15, "max": 25 } 
+                    }, 
+                    "wobble": { 
+                        "distance": 30, 
+                        "enable": true, 
+                        "move": true, 
+                        "speed": { "min": -15, "max": 15 } 
+                    } 
+                }, 
+                "emitters": [
+                    {
+                        "life": { "count": 50, "duration": 0.1, "delay": 0 },
+                        "rate": { "delay": 0.1, "quantity": 100 },
+                        "size": { "width": 0, "height": 0 },
+                        "position": { "x": 10, "y": 100 }
+                    },
+                    {
+                        "life": { "count": 50, "duration": 0.1, "delay": 0.2 },
+                        "rate": { "delay": 0.1, "quantity": 100 },
+                        "size": { "width": 0, "height": 0 },
+                        "position": { "x": 90, "y": 100 }
+                    }
+                ]
+            } 
+        });
 
-    createConfettiPiece(container, side) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        
-        // Position from bottom corners
-        if (side === 'left') {
-            confetti.style.left = Math.random() * 20 + '%';
-        } else {
-            confetti.style.left = Math.random() * 20 + 80 + '%';
-        }
-        
-        confetti.style.bottom = '0px';
-        
-        // Random delay for staggered effect
-        confetti.style.animationDelay = Math.random() * 0.5 + 's';
-        
-        // Random size variation
-        const size = Math.random() * 8 + 6;
-        confetti.style.width = size + 'px';
-        confetti.style.height = size + 'px';
-        
-        container.appendChild(confetti);
+        // Clear particles after 4 seconds
+        setTimeout(() => {
+            tsParticles.dom()[0]?.destroy();
+        }, 4000);
     }
 
     getCurrentPositions() {
