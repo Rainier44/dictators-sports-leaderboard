@@ -1,3 +1,13 @@
+/* Custom font - you'll need to add the October Guard font file */
+@font-face {
+    font-family: 'October Guard';
+    src: url('./fonts/october-guard.woff2') format('woff2'),
+         url('./fonts/october-guard.woff') format('woff'),
+         url('./fonts/october-guard.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -24,17 +34,23 @@ body {
 }
 
 .header h1 {
-    font-size: 3rem;
+    font-family: 'October Guard', 'Georgia', serif;
+    font-size: 4rem;
     color: #ffd700;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-    margin-bottom: 10px;
-    letter-spacing: 2px;
+    text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
+    margin-bottom: 15px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 }
 
 .header h2 {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     color: #ccc;
     font-style: italic;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.3;
 }
 
 .controls {
@@ -78,6 +94,27 @@ input, select {
 
 input::placeholder {
     color: #ccc;
+}
+
+/* Photo input styling */
+.photo-input {
+    background: rgba(255,255,255,0.15);
+    padding: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.photo-input::file-selector-button {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
 }
 
 /* Fix dropdown menu visibility */
@@ -206,6 +243,25 @@ select option:disabled {
     color: #ffd700;
 }
 
+.player-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffd700;
+    margin-left: 15px;
+    box-shadow: 0 0 15px rgba(255,215,0,0.3);
+}
+
+.player-photo.default {
+    background: linear-gradient(45deg, #666, #888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #fff;
+}
+
 .player-info {
     flex: 1;
     margin-left: 20px;
@@ -252,12 +308,34 @@ select option:disabled {
     transform: scale(1);
 }
 
+.player-photo-big {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #ffd700;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 30px rgba(255,215,0,0.5);
+}
+
+.player-photo-big.default {
+    background: linear-gradient(45deg, #666, #888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: #fff;
+}
+
 .player-name-big {
+    font-family: 'October Guard', 'Georgia', serif;
     font-size: 4rem;
     font-weight: bold;
     color: #ffd700;
     margin-bottom: 20px;
     text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .score-display {
@@ -299,7 +377,11 @@ select option:disabled {
     }
     
     .header h1 {
-        font-size: 2rem;
+        font-size: 2.5rem;
+    }
+    
+    .header h2 {
+        font-size: 1.3rem;
     }
     
     .player-name-big {
@@ -308,5 +390,15 @@ select option:disabled {
     
     .score-display {
         font-size: 4rem;
+    }
+    
+    .player-photo-big {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .player-photo {
+        width: 50px;
+        height: 50px;
     }
 }
