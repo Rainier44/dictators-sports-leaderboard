@@ -112,64 +112,81 @@ class SportsLeaderboard {
 
         console.log('✅ tsParticles library is available');
 
-        // Very simple confetti configuration for testing
-        const simpleConfettiOptions = {
-            fullScreen: { 
-                enable: true,
-                zIndex: 999999 
-            },
-            particles: {
-                number: { value: 100 },
-                color: { 
-                    value: ["#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4"] 
-                },
-                shape: { 
-                    type: ["circle", "square"]
-                },
-                opacity: { 
-                    value: 1
-                },
-                size: { 
-                    value: { min: 3, max: 8 }
-                },
-                move: { 
-                    enable: true,
-                    speed: { min: 2, max: 8 },
-                    direction: "none",
-                    random: true,
-                    straight: false,
-                    outModes: "out"
-                }
+        // Try to destroy any existing particles first
+        try {
+            const existingContainer = tsParticles.domItem(0);
+            if (existingContainer) {
+                existingContainer.destroy();
             }
-        };
+        } catch (e) {
+            console.log('No existing particles to clean up');
+        }
 
-        console.log('🚀 Loading tsParticles with config...');
-
-        // Load the confetti
-        tsParticles.load({ 
-            id: "tsparticles", 
-            options: simpleConfettiOptions
-        }).then(() => {
-            console.log('✅ Confetti loaded successfully!');
-        }).catch(error => {
-            console.error('❌ Error loading confetti:', error);
+        // Ultra simple approach - just use the confetti function directly
+        console.log('🚀 Firing confetti from bottom corners...');
+        
+        // Fire confetti from left bottom corner
+        tsParticles.confetti("tsparticles", {
+            count: 80,
+            position: {
+                x: 10,
+                y: 100
+            },
+            spread: 60,
+            startVelocity: 30,
+            decay: 0.9,
+            gravity: 1,
+            drift: 0,
+            ticks: 300,
+            colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
+            shapes: ['square', 'circle'],
+            scalar: 1.2,
+            zIndex: 999999
         });
 
-        // Clear particles after 3 seconds
+        // Fire confetti from right bottom corner (slight delay)
         setTimeout(() => {
-            console.log('🧹 Cleaning up confetti...');
-            try {
-                const container = tsParticles.domItem(0);
-                if (container) {
-                    container.destroy();
-                    console.log('✅ Confetti cleaned up successfully');
-                } else {
-                    console.log('⚠️ No container found to clean up');
-                }
-            } catch (error) {
-                console.error('❌ Error cleaning up confetti:', error);
-            }
-        }, 3000);
+            tsParticles.confetti("tsparticles", {
+                count: 80,
+                position: {
+                    x: 90,
+                    y: 100
+                },
+                spread: 60,
+                startVelocity: 30,
+                decay: 0.9,
+                gravity: 1,
+                drift: 0,
+                ticks: 300,
+                colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
+                shapes: ['square', 'circle'],
+                scalar: 1.2,
+                zIndex: 999999
+            });
+        }, 150);
+
+        // Fire confetti from center bottom (more delay)
+        setTimeout(() => {
+            tsParticles.confetti("tsparticles", {
+                count: 60,
+                position: {
+                    x: 50,
+                    y: 100
+                },
+                spread: 100,
+                startVelocity: 35,
+                decay: 0.9,
+                gravity: 1,
+                drift: 0,
+                ticks: 300,
+                colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
+                shapes: ['square', 'circle'],
+                scalar: 1,
+                zIndex: 999999
+            });
+        }, 300);
+
+        console.log('✅ Confetti fired!');
     }
 
     getCurrentPositions() {
@@ -501,10 +518,5 @@ document.addEventListener('keydown', function(e) {
         } else if (activeElement.id === 'scoreInput') {
             addScore();
         }
-    }
-    
-    // Secret key combination to test confetti: Ctrl + Shift + C
-    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
-        testConfetti();
     }
 });
