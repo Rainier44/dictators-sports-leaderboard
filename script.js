@@ -44,12 +44,14 @@ class SportsLeaderboard {
             return;
         }
 
-        // Add score to current round
-        if (!player.roundScores[this.currentRound - 1]) {
-            player.roundScores[this.currentRound - 1] = 0;
+        // Check if player already has a score for this round
+        if (player.roundScores[this.currentRound - 1] !== undefined) {
+            alert(`${player.name} already has a score for Round ${this.currentRound}!`);
+            return;
         }
-        
-        player.roundScores[this.currentRound - 1] += parseInt(score);
+
+        // Add score to current round
+        player.roundScores[this.currentRound - 1] = parseInt(score);
         player.totalScore += parseInt(score);
 
         // Show animation
@@ -120,11 +122,16 @@ class SportsLeaderboard {
             const playerRow = document.createElement('div');
             playerRow.className = `player-row rank-${rank <= 3 ? rank : 'other'}`;
             
+            // Show all round scores
+            const roundScoresDisplay = player.roundScores.map((score, idx) => 
+                `R${idx + 1}: ${score !== undefined ? score : '-'}`
+            ).join(', ') || 'No scores yet';
+            
             playerRow.innerHTML = `
                 <div class="rank-number">${rank}</div>
                 <div class="player-info">
                     <div class="player-name">${player.name}</div>
-                    <div class="player-score">Round ${this.currentRound} scores: ${player.roundScores.join(', ') || 'No scores yet'}</div>
+                    <div class="player-score">${roundScoresDisplay}</div>
                 </div>
                 <div class="total-score">${player.totalScore}</div>
             `;
@@ -144,7 +151,19 @@ class SportsLeaderboard {
         this.players.forEach(player => {
             const option = document.createElement('option');
             option.value = player.id;
-            option.textContent = `${player.name} (${player.totalScore} pts)`;
+            
+            // Check if player already has a score for current round
+            const hasScoreThisRound = player.roundScores[this.currentRound - 1] !== undefined;
+            const scoreText = hasScoreThisRound ? ' ✅' : '';
+            
+            option.textContent = `${player.name} (${player.totalScore} pts)${scoreText}`;
+            
+            // Disable option if player already scored this round
+            if (hasScoreThisRound) {
+                option.disabled = true;
+                option.style.color = '#666';
+            }
+            
             select.appendChild(option);
         });
     }
@@ -153,6 +172,26 @@ class SportsLeaderboard {
         this.currentRound++;
         this.updateDisplay();
         this.saveData();
+    }
+
+    resetRound() {
+        if (this.currentRound === 1) {
+            alert('Cannot reset Round 1!');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to reset Round ${this.currentRound}? This will remove all scores from this round.`)) {
+            this.players.forEach(player => {
+                // Remove the score from current round if it exists
+                if (player.roundScores[this.currentRound - 1] !== undefined) {
+                    player.totalScore -= player.roundScores[this.currentRound - 1];
+                    player.roundScores[this.currentRound - 1] = undefined;
+                }
+            });
+            
+            this.updateDisplay();
+            this.saveData();
+        }
     }
 
     resetAll() {
@@ -199,6 +238,10 @@ function addScore() {
 
 function nextRound() {
     leaderboard.nextRound();
+}
+
+function resetRound() {
+    leaderboard.resetRound();
 }
 
 function resetAll() {
