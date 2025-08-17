@@ -21,11 +21,42 @@ body {
     color: #fff;
     min-height: 100vh;
     padding: 20px;
+    position: relative;
+}
+
+/* Side banners */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    width: 200px;
+    height: 100vh;
+    background-image: url('./images/sportsman-logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+}
+
+body::before {
+    left: 0;
+    background-position: center left;
+}
+
+body::after {
+    right: 0;
+    background-position: center right;
+    transform: scaleX(-1); /* Mirror the right side banner */
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 .header {
@@ -369,6 +400,14 @@ select option:disabled {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
+}
+
+@media (max-width: 1400px) {
+    /* Hide side banners on smaller screens */
+    body::before,
+    body::after {
+        display: none;
+    }
 }
 
 @media (max-width: 768px) {
