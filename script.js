@@ -66,10 +66,25 @@ class SportsLeaderboard {
 
         // Store old positions before updating
         const oldPositions = this.getCurrentPositions();
+        
+        // Check if player was first before scoring
+        const sortedBefore = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        const wasFirst = sortedBefore.length > 0 && sortedBefore[0].id == playerId;
 
         // Add score to current round
         player.roundScores[this.currentRound - 1] = parseInt(score);
         player.totalScore += parseInt(score);
+
+        // Check if player is now first
+        const sortedAfter = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        const isNowFirst = sortedAfter[0].id == playerId;
+
+        // Show confetti if someone just became first
+        if (!wasFirst && isNowFirst) {
+            setTimeout(() => {
+                this.createConfetti();
+            }, 1600);
+        }
 
         // Animate the movement, then show popup
         this.animateToNewPositions(oldPositions, playerId, parseInt(score));
@@ -77,6 +92,49 @@ class SportsLeaderboard {
         // Clear inputs
         document.getElementById('playerSelect').value = '';
         document.getElementById('scoreInput').value = '';
+    }
+
+    createConfetti() {
+        const confettiContainer = document.createElement('div');
+        confettiContainer.className = 'confetti-container';
+        document.body.appendChild(confettiContainer);
+        
+        // Create confetti pieces from both bottom corners
+        for (let i = 0; i < 50; i++) {
+            this.createConfettiPiece(confettiContainer, 'left');
+            this.createConfettiPiece(confettiContainer, 'right');
+        }
+        
+        // Remove confetti container after animation
+        setTimeout(() => {
+            if (document.body.contains(confettiContainer)) {
+                document.body.removeChild(confettiContainer);
+            }
+        }, 3000);
+    }
+
+    createConfettiPiece(container, side) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Position from bottom corners
+        if (side === 'left') {
+            confetti.style.left = Math.random() * 20 + '%';
+        } else {
+            confetti.style.left = Math.random() * 20 + 80 + '%';
+        }
+        
+        confetti.style.bottom = '0px';
+        
+        // Random delay for staggered effect
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+        
+        // Random size variation
+        const size = Math.random() * 8 + 6;
+        confetti.style.width = size + 'px';
+        confetti.style.height = size + 'px';
+        
+        container.appendChild(confetti);
     }
 
     getCurrentPositions() {
