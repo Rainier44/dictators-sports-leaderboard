@@ -80,6 +80,27 @@ input::placeholder {
     color: #ccc;
 }
 
+/* Fix dropdown menu visibility */
+select {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+select option {
+    background: #2d2d2d;
+    color: #fff;
+    padding: 8px;
+}
+
+select option:hover {
+    background: #3d3d3d;
+}
+
+select option:disabled {
+    background: #1a1a1a;
+    color: #666;
+}
+
 .btn {
     padding: 12px 20px;
     border: none;
@@ -104,6 +125,11 @@ input::placeholder {
 
 .btn-round {
     background: linear-gradient(45deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.btn-reset-round {
+    background: linear-gradient(45deg, #9C27B0, #7B1FA2);
     color: white;
 }
 
