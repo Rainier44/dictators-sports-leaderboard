@@ -3,14 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sportsman van het Jaar - Leaderboard</title>
+    <title>Sportsman van het Jaar - Admin Controls</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .page-selector {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-bottom: 20px;
+        }
+        .page-selector h2 {
+            color: white;
+            margin: 0 0 15px 0;
+        }
+        .page-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .page-link {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        .page-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .page-link.current {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        .admin-notice {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    <div class="page-selector">
+        <h2>🏆 Sportsman van het Jaar - Besturing</h2>
+        <div class="page-links">
+            <a href="index.html" class="page-link current">📊 Admin Controls</a>
+            <a href="display.html" class="page-link">📺 Leaderboard Display</a>
+        </div>
+    </div>
+
     <div class="container">
+        <div class="admin-notice">
+            🔒 ADMIN PAGINA - Deel deze URL niet met deelnemers! Gebruik display.html voor het publiek.
+        </div>
+
         <div class="header">
             <h1>🏆 SPORTSMAN VAN HET JAAR 🏆</h1>
-            <h2>Wie zal de eeuwige roem behalen en zijn rijk tot glorie leiden?</h2>
+            <h2>Admin Controls - Beheer de competitie</h2>
         </div>
 
         <div class="controls">
@@ -39,7 +96,8 @@
 
         <div class="leaderboard">
             <div class="leaderboard-header">
-                <h3>Huidige Stand</h3>
+                <h3>Huidige Stand (Admin Preview)</h3>
+                <p style="font-style: italic; color: #666;">Deelnemers zien dit op display.html</p>
             </div>
             <div id="leaderboardList" class="leaderboard-list">
                 <!-- Players will be dynamically added here -->
