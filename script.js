@@ -71,6 +71,8 @@ class SportsLeaderboard {
         const sortedBefore = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         const wasFirst = sortedBefore.length > 0 && sortedBefore[0].id == playerId;
 
+        console.log(`Player ${player.name} was first before: ${wasFirst}`);
+
         // Add score to current round
         player.roundScores[this.currentRound - 1] = parseInt(score);
         player.totalScore += parseInt(score);
@@ -79,11 +81,16 @@ class SportsLeaderboard {
         const sortedAfter = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         const isNowFirst = sortedAfter[0].id == playerId;
 
+        console.log(`Player ${player.name} is now first: ${isNowFirst}`);
+
         // Show confetti if someone just became first
         if (!wasFirst && isNowFirst) {
+            console.log('🎉 CONFETTI SHOULD TRIGGER! Player became #1');
             setTimeout(() => {
                 this.createConfetti();
             }, 1600);
+        } else {
+            console.log('No confetti - either was already first or not first now');
         }
 
         // Animate the movement, then show popup
@@ -95,183 +102,74 @@ class SportsLeaderboard {
     }
 
     createConfetti() {
+        console.log('🎊 createConfetti() called!');
+        
         // Check if tsParticles is loaded
         if (typeof tsParticles === 'undefined') {
-            console.error('tsParticles library not loaded!');
+            console.error('❌ tsParticles library not loaded!');
             return;
         }
 
-        // Configuration for confetti shooting from bottom corners to center
-        const confettiOptions = {
+        console.log('✅ tsParticles library is available');
+
+        // Very simple confetti configuration for testing
+        const simpleConfettiOptions = {
             fullScreen: { 
-                enable: false,
-                zIndex: 999 
+                enable: true,
+                zIndex: 999999 
             },
             particles: {
-                number: { value: 0 },
+                number: { value: 100 },
                 color: { 
-                    value: ["#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#ff9ff3", "#54a0ff"] 
+                    value: ["#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4"] 
                 },
                 shape: { 
-                    type: ["circle", "square", "triangle"],
-                    options: {}
+                    type: ["circle", "square"]
                 },
                 opacity: { 
-                    value: { min: 0.3, max: 1 },
-                    animation: { 
-                        enable: true, 
-                        speed: 3, 
-                        startValue: "max", 
-                        destroy: "min" 
-                    } 
+                    value: 1
                 },
                 size: { 
-                    value: { min: 4, max: 8 }
-                },
-                links: { enable: false },
-                life: { 
-                    duration: { sync: false, value: { min: 2, max: 4 } },
-                    count: 1 
+                    value: { min: 3, max: 8 }
                 },
                 move: { 
                     enable: true,
-                    gravity: { 
-                        enable: true, 
-                        acceleration: 15 
-                    },
-                    speed: { min: 15, max: 25 },
-                    decay: 0.05,
+                    speed: { min: 2, max: 8 },
                     direction: "none",
+                    random: true,
                     straight: false,
-                    outModes: { 
-                        default: "destroy",
-                        top: "none" 
-                    }
-                },
-                rotate: { 
-                    value: { min: 0, max: 360 },
-                    direction: "random",
-                    move: true,
-                    animation: { 
-                        enable: true, 
-                        speed: 60 
-                    } 
-                },
-                tilt: { 
-                    direction: "random",
-                    enable: true,
-                    move: true,
-                    value: { min: 0, max: 360 },
-                    animation: { 
-                        enable: true, 
-                        speed: 60 
-                    } 
-                },
-                roll: { 
-                    darken: { enable: true, value: 25 },
-                    enable: true,
-                    speed: { min: 15, max: 25 } 
-                },
-                wobble: { 
-                    distance: 30,
-                    enable: true,
-                    move: true,
-                    speed: { min: -15, max: 15 } 
+                    outModes: "out"
                 }
-            },
-            emitters: [
-                // Left bottom corner shooting towards center-top
-                {
-                    life: { 
-                        count: 80, 
-                        duration: 0.1, 
-                        delay: 0 
-                    },
-                    rate: { 
-                        delay: 0.05, 
-                        quantity: 5 
-                    },
-                    size: { 
-                        width: 0, 
-                        height: 0 
-                    },
-                    position: { 
-                        x: 5, 
-                        y: 95 
-                    },
-                    direction: {
-                        value: 315, // Shoot towards top-right (center)
-                        spread: 30
-                    }
-                },
-                // Right bottom corner shooting towards center-top
-                {
-                    life: { 
-                        count: 80, 
-                        duration: 0.1, 
-                        delay: 0.1 
-                    },
-                    rate: { 
-                        delay: 0.05, 
-                        quantity: 5 
-                    },
-                    size: { 
-                        width: 0, 
-                        height: 0 
-                    },
-                    position: { 
-                        x: 95, 
-                        y: 95 
-                    },
-                    direction: {
-                        value: 225, // Shoot towards top-left (center)
-                        spread: 30
-                    }
-                },
-                // Center bottom for extra effect
-                {
-                    life: { 
-                        count: 60, 
-                        duration: 0.1, 
-                        delay: 0.2 
-                    },
-                    rate: { 
-                        delay: 0.03, 
-                        quantity: 8 
-                    },
-                    size: { 
-                        width: 10, 
-                        height: 0 
-                    },
-                    position: { 
-                        x: 50, 
-                        y: 100 
-                    },
-                    direction: {
-                        value: 270, // Shoot straight up
-                        spread: 45
-                    }
-                }
-            ]
+            }
         };
+
+        console.log('🚀 Loading tsParticles with config...');
 
         // Load the confetti
         tsParticles.load({ 
             id: "tsparticles", 
-            options: confettiOptions
+            options: simpleConfettiOptions
         }).then(() => {
-            console.log('Confetti started!');
+            console.log('✅ Confetti loaded successfully!');
         }).catch(error => {
-            console.error('Error loading confetti:', error);
+            console.error('❌ Error loading confetti:', error);
         });
 
-        // Clear particles after animation completes
+        // Clear particles after 3 seconds
         setTimeout(() => {
-            const container = tsParticles.domItem(0);
-            if (container) {
-                container.destroy();
+            console.log('🧹 Cleaning up confetti...');
+            try {
+                const container = tsParticles.domItem(0);
+                if (container) {
+                    container.destroy();
+                    console.log('✅ Confetti cleaned up successfully');
+                } else {
+                    console.log('⚠️ No container found to clean up');
+                }
+            } catch (error) {
+                console.error('❌ Error cleaning up confetti:', error);
             }
-        }, 5000);
+        }, 3000);
     }
 
     getCurrentPositions() {
@@ -588,6 +486,12 @@ function resetAll() {
     leaderboard.resetAll();
 }
 
+// Test confetti function (for debugging)
+function testConfetti() {
+    console.log('🧪 Testing confetti manually...');
+    leaderboard.createConfetti();
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
@@ -597,5 +501,10 @@ document.addEventListener('keydown', function(e) {
         } else if (activeElement.id === 'scoreInput') {
             addScore();
         }
+    }
+    
+    // Secret key combination to test confetti: Ctrl + Shift + C
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        testConfetti();
     }
 });
