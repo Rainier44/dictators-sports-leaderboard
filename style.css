@@ -1,3 +1,221 @@
+/* Custom font - you'll need to add the October Guard font file */
+@font-face {
+    font-family: 'October Guard';
+    src: url('./fonts/october-guard.woff2') format('woff2'),
+         url('./fonts/october-guard.woff') format('woff'),
+         url('./fonts/october-guard.otf') format('opentype'),
+         url('./fonts/october-guard.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    background: 
+        linear-gradient(135deg, rgba(26,26,26,0.85) 0%, rgba(45,45,45,0.85) 100%),
+        url('./images/sportsman-logo.png');
+    background-size: auto, 40%;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeInDown 1s ease-out;
+}
+
+.header h1 {
+    font-family: 'October Guard', 'Georgia', serif;
+    font-size: 4rem;
+    color: #ffd700;
+    text-shadow: 4px 4px 8px rgba(0,0,0,0.9);
+    margin-bottom: 15px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.header h2 {
+    font-size: 1.8rem;
+    color: #ccc;
+    font-style: italic;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    max-width: 1000px;
+    margin: 0 auto;
+    line-height: 1.3;
+}
+
+.controls {
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.add-player-section,
+.scoring-section,
+.round-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.round-info {
+    align-items: center;
+    text-align: center;
+}
+
+.round-info span {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+input, select {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 16px;
+}
+
+input::placeholder {
+    color: #ccc;
+}
+
+/* Photo input styling */
+.photo-input {
+    background: rgba(255,255,255,0.2);
+    padding: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.photo-input::file-selector-button {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Fix dropdown menu visibility */
+select {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+}
+
+select option {
+    background: #2d2d2d;
+    color: #fff;
+    padding: 8px;
+}
+
+select option:hover {
+    background: #3d3d3d;
+}
+
+select option:disabled {
+    background: #1a1a1a;
+    color: #666;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-add {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.btn-score {
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+    color: white;
+}
+
+.btn-round {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.btn-reset-round {
+    background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+    color: white;
+}
+
+.btn-reset {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.leaderboard {
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 25px;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.leaderboard-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.leaderboard-header h3 {
+    font-size: 2rem;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
 .player-row {
     display: flex;
     align-items: center;
@@ -22,4 +240,218 @@
     box-shadow: 0 0 25px rgba(255,215,0,0.5);
     transform: scale(1.02);
     border-left-color: #ffd700;
+}
+
+.player-row.rank-1 {
+    border-left-color: #ffd700;
+    background: linear-gradient(90deg, rgba(255,215,0,0.25) 0%, rgba(255,255,255,0.15) 100%);
+}
+
+.player-row.rank-2 {
+    border-left-color: #c0c0c0;
+    background: linear-gradient(90deg, rgba(192,192,192,0.25) 0%, rgba(255,255,255,0.15) 100%);
+}
+
+.player-row.rank-3 {
+    border-left-color: #cd7f32;
+    background: linear-gradient(90deg, rgba(205,127,50,0.25) 0%, rgba(255,255,255,0.15) 100%);
+}
+
+.rank-number {
+    font-size: 2rem;
+    font-weight: bold;
+    width: 60px;
+    text-align: center;
+    color: #ffd700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.player-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffd700;
+    margin-left: 15px;
+    box-shadow: 0 0 15px rgba(255,215,0,0.4);
+}
+
+.player-photo.default {
+    background: linear-gradient(45deg, #666, #888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #fff;
+}
+
+.player-info {
+    flex: 1;
+    margin-left: 20px;
+}
+
+.player-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.player-score {
+    font-size: 1.1rem;
+    color: #ccc;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.total-score {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.animation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.score-animation {
+    text-align: center;
+    transform: scale(0);
+    transition: all 0.5s ease;
+}
+
+.score-animation.show {
+    transform: scale(1);
+    animation: popIn 0.5s ease;
+}
+
+.player-photo-big {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #ffd700;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 30px rgba(255,215,0,0.6);
+}
+
+.player-photo-big.default {
+    background: linear-gradient(45deg, #666, #888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: #fff;
+}
+
+.player-name-big {
+    font-family: 'October Guard', 'Georgia', serif;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 4px 4px 8px rgba(0,0,0,0.9);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.score-display {
+    font-size: 6rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 20px;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+}
+
+.rank-display {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        background-size: auto, 60%;
+    }
+    
+    .controls {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .player-name-big {
+        font-size: 2.5rem;
+    }
+    
+    .score-display {
+        font-size: 4rem;
+    }
+    
+    .rank-display {
+        font-size: 2.5rem;
+    }
+    
+    .player-photo-big {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .player-photo {
+        width: 50px;
+        height: 50px;
+    }
 }
