@@ -222,15 +222,24 @@ select option:disabled {
     background: rgba(255,255,255,0.15);
     border-radius: 12px;
     padding: 20px;
-    transition: all 0.5s ease;
+    transition: all 0.8s ease;
     border-left: 5px solid transparent;
     backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateX(-50px);
 }
 
-.player-row.updating {
-    transform: scale(1.05);
-    background: rgba(255,215,0,0.25);
-    box-shadow: 0 0 20px rgba(255,215,0,0.4);
+/* Slide-in animation for new positions */
+.player-row.slide-in {
+    animation: slideInFromLeft 0.8s ease forwards;
+}
+
+/* Special highlighting for updated player */
+.player-row.player-updating {
+    background: rgba(255,215,0,0.3);
+    box-shadow: 0 0 25px rgba(255,215,0,0.5);
+    transform: scale(1.02);
+    border-left-color: #ffd700;
 }
 
 .player-row.rank-1 {
@@ -322,6 +331,7 @@ select option:disabled {
 
 .score-animation.show {
     transform: scale(1);
+    animation: popIn 0.5s ease;
 }
 
 .player-photo-big {
@@ -354,49 +364,12 @@ select option:disabled {
     letter-spacing: 2px;
 }
 
-.position-display {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #fff;
-    margin-bottom: 20px;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
-    transition: all 0.5s ease;
-}
-
-.position-display.position-show {
-    animation: fadeIn 0.5s ease;
-}
-
-.position-display.position-moving-up {
-    color: #4CAF50;
-    animation: bounce 0.3s ease infinite;
-}
-
-.position-display.position-moving-down {
-    color: #f44336;
-    animation: bounce 0.3s ease infinite;
-}
-
-.position-display.position-final-up {
-    color: #4CAF50;
-    animation: celebrate 0.8s ease;
-}
-
-.position-display.position-no-change {
-    color: #FF9800;
-}
-
 .score-display {
     font-size: 6rem;
     font-weight: bold;
     color: #fff;
     margin-bottom: 20px;
     text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
-    transition: all 0.5s ease;
-}
-
-.score-display.score-reveal {
-    animation: scoreReveal 0.8s ease;
 }
 
 .rank-display {
@@ -404,11 +377,6 @@ select option:disabled {
     font-weight: bold;
     color: #ffd700;
     text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
-    transition: all 0.5s ease;
-}
-
-.rank-display.rank-reveal {
-    animation: slideUp 0.8s ease;
 }
 
 @keyframes fadeInDown {
@@ -422,49 +390,29 @@ select option:disabled {
     }
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-@keyframes celebrate {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.2); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-@keyframes scoreReveal {
-    0% { 
+@keyframes slideInFromLeft {
+    from {
         opacity: 0;
-        transform: scale(0.5);
+        transform: translateX(-50px);
     }
-    100% { 
+    to {
         opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
         transform: scale(1);
-    }
-}
-
-@keyframes slideUp {
-    0% { 
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    100% { 
         opacity: 1;
-        transform: translateY(0);
     }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
 }
 
 @media (max-width: 768px) {
@@ -487,10 +435,6 @@ select option:disabled {
     
     .player-name-big {
         font-size: 2.5rem;
-    }
-    
-    .position-display {
-        font-size: 2rem;
     }
     
     .score-display {
