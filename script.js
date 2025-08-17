@@ -112,81 +112,182 @@ class SportsLeaderboard {
 
         console.log('✅ tsParticles library is available');
 
-        // Try to destroy any existing particles first
+        // Clear any existing particles
         try {
-            const existingContainer = tsParticles.domItem(0);
-            if (existingContainer) {
-                existingContainer.destroy();
+            const container = tsParticles.domItem(0);
+            if (container) {
+                container.destroy();
             }
         } catch (e) {
             console.log('No existing particles to clean up');
         }
 
-        // Ultra simple approach - just use the confetti function directly
-        console.log('🚀 Firing confetti from bottom corners...');
-        
-        // Fire confetti from left bottom corner
-        tsParticles.confetti("tsparticles", {
-            count: 80,
-            position: {
-                x: 10,
-                y: 100
+        console.log('🚀 Loading confetti particles...');
+
+        // Confetti configuration that shoots from bottom corners to center
+        const confettiConfig = {
+            fullScreen: {
+                enable: true,
+                zIndex: 999999
             },
-            spread: 60,
-            startVelocity: 30,
-            decay: 0.9,
-            gravity: 1,
-            drift: 0,
-            ticks: 300,
-            colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
-            shapes: ['square', 'circle'],
-            scalar: 1.2,
-            zIndex: 999999
+            fpsLimit: 120,
+            particles: {
+                number: {
+                    value: 0 // We'll use emitters instead
+                },
+                color: {
+                    value: ["#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#ff9ff3", "#54a0ff"]
+                },
+                shape: {
+                    type: ["circle", "square"]
+                },
+                opacity: {
+                    value: { min: 0.3, max: 1 },
+                    animation: {
+                        enable: true,
+                        speed: 3,
+                        startValue: "max",
+                        destroy: "min"
+                    }
+                },
+                size: {
+                    value: { min: 4, max: 8 }
+                },
+                life: {
+                    duration: {
+                        sync: false,
+                        value: { min: 2, max: 4 }
+                    },
+                    count: 1
+                },
+                move: {
+                    enable: true,
+                    gravity: {
+                        enable: true,
+                        acceleration: 9.81,
+                        maxSpeed: 50
+                    },
+                    speed: { min: 15, max: 25 },
+                    decay: 0.1,
+                    direction: "none",
+                    straight: false,
+                    outModes: {
+                        default: "destroy",
+                        top: "none"
+                    }
+                },
+                rotate: {
+                    value: { min: 0, max: 360 },
+                    direction: "random",
+                    animation: {
+                        enable: true,
+                        speed: 30
+                    }
+                }
+            },
+            emitters: [
+                // Left bottom corner
+                {
+                    life: {
+                        count: 60,
+                        duration: 0.1,
+                        delay: 0
+                    },
+                    rate: {
+                        delay: 0.1,
+                        quantity: 10
+                    },
+                    size: {
+                        width: 0,
+                        height: 0
+                    },
+                    position: {
+                        x: 10,
+                        y: 95
+                    },
+                    direction: "top",
+                    particles: {
+                        move: {
+                            angle: {
+                                offset: 45,
+                                value: 45
+                            }
+                        }
+                    }
+                },
+                // Right bottom corner
+                {
+                    life: {
+                        count: 60,
+                        duration: 0.1,
+                        delay: 0.15
+                    },
+                    rate: {
+                        delay: 0.1,
+                        quantity: 10
+                    },
+                    size: {
+                        width: 0,
+                        height: 0
+                    },
+                    position: {
+                        x: 90,
+                        y: 95
+                    },
+                    direction: "top",
+                    particles: {
+                        move: {
+                            angle: {
+                                offset: 135,
+                                value: 135
+                            }
+                        }
+                    }
+                },
+                // Center bottom
+                {
+                    life: {
+                        count: 40,
+                        duration: 0.1,
+                        delay: 0.3
+                    },
+                    rate: {
+                        delay: 0.05,
+                        quantity: 15
+                    },
+                    size: {
+                        width: 10,
+                        height: 0
+                    },
+                    position: {
+                        x: 50,
+                        y: 100
+                    },
+                    direction: "top",
+                    particles: {
+                        move: {
+                            angle: {
+                                offset: 90,
+                                value: 90
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+
+        // Load the particles
+        tsParticles.load("tsparticles", confettiConfig).then(container => {
+            console.log('✅ Confetti particles loaded successfully!');
+            
+            // Auto cleanup after 5 seconds
+            setTimeout(() => {
+                console.log('🧹 Cleaning up confetti...');
+                container.destroy();
+            }, 5000);
+        }).catch(error => {
+            console.error('❌ Error loading confetti:', error);
         });
-
-        // Fire confetti from right bottom corner (slight delay)
-        setTimeout(() => {
-            tsParticles.confetti("tsparticles", {
-                count: 80,
-                position: {
-                    x: 90,
-                    y: 100
-                },
-                spread: 60,
-                startVelocity: 30,
-                decay: 0.9,
-                gravity: 1,
-                drift: 0,
-                ticks: 300,
-                colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
-                shapes: ['square', 'circle'],
-                scalar: 1.2,
-                zIndex: 999999
-            });
-        }, 150);
-
-        // Fire confetti from center bottom (more delay)
-        setTimeout(() => {
-            tsParticles.confetti("tsparticles", {
-                count: 60,
-                position: {
-                    x: 50,
-                    y: 100
-                },
-                spread: 100,
-                startVelocity: 35,
-                decay: 0.9,
-                gravity: 1,
-                drift: 0,
-                ticks: 300,
-                colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
-                shapes: ['square', 'circle'],
-                scalar: 1,
-                zIndex: 999999
-            });
-        }, 300);
-
-        console.log('✅ Confetti fired!');
     }
 
     getCurrentPositions() {
