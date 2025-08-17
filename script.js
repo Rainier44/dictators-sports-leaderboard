@@ -64,42 +64,97 @@ class SportsLeaderboard {
             return;
         }
 
-        // Store old position for animation
-        const oldPosition = this.getPlayerPosition(player.id);
-
         // Add score to current round
         player.roundScores[this.currentRound - 1] = parseInt(score);
         player.totalScore += parseInt(score);
 
-        // Calculate new position
-        const newPosition = this.getPlayerPosition(player.id);
-
-        // Show suspenseful animation
-        this.showSuspenseAnimation(player, oldPosition, newPosition, parseInt(score));
+        // Show real-time leaderboard animation then popup
+        this.animateLeaderboardUpdate(player, parseInt(score));
 
         // Clear inputs
         document.getElementById('playerSelect').value = '';
         document.getElementById('scoreInput').value = '';
     }
 
-    getPlayerPosition(playerId) {
-        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        return sortedPlayers.findIndex(p => p.id === playerId) + 1;
+    animateLeaderboardUpdate(player, score) {
+        // First update the leaderboard with animation
+        this.updateDisplayWithAnimation(player.id);
+        
+        // After 3 seconds, show the popup
+        setTimeout(() => {
+            this.showSimplePopup(player, score);
+        }, 3000);
+
+        this.saveData();
     }
 
-    showSuspenseAnimation(player, oldPosition, newPosition, score) {
+    updateDisplayWithAnimation(updatedPlayerId) {
+        const leaderboardList = document.getElementById('leaderboardList');
+        
+        // Sort players by total score
+        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        
+        // Clear and rebuild leaderboard
+        leaderboardList.innerHTML = '';
+        
+        sortedPlayers.forEach((player, index) => {
+            const rank = index + 1;
+            const playerRow = document.createElement('div');
+            playerRow.className = `player-row rank-${rank <= 3 ? rank : 'other'}`;
+            playerRow.setAttribute('data-player-id', player.id);
+            
+            // Add special animation class for the updated player
+            if (player.id === updatedPlayerId) {
+                playerRow.classList.add('player-updating');
+                // Remove animation class after 3 seconds
+                setTimeout(() => {
+                    playerRow.classList.remove('player-updating');
+                }, 3000);
+            }
+            
+            // Show all round scores
+            const roundScoresDisplay = player.roundScores.map((score, idx) => 
+                `R${idx + 1}: ${score !== undefined ? score : '-'}`
+            ).join(', ') || 'Nog geen scores';
+            
+            // Create photo element
+            const photoHtml = player.photo 
+                ? `<img src="${player.photo}" alt="${player.name}" class="player-photo">`
+                : `<div class="player-photo default">👑</div>`;
+            
+            playerRow.innerHTML = `
+                <div class="rank-number">${rank}</div>
+                ${photoHtml}
+                <div class="player-info">
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-score">${roundScoresDisplay}</div>
+                </div>
+                <div class="total-score">${player.totalScore}</div>
+            `;
+            
+            // Add slide-in animation with delay based on final position
+            playerRow.style.animationDelay = `${index * 0.1}s`;
+            playerRow.classList.add('slide-in');
+            
+            leaderboardList.appendChild(playerRow);
+        });
+        
+        if (this.players.length === 0) {
+            leaderboardList.innerHTML = '<div class="player-row"><div class="player-info"><div class="player-name">Nog geen spelers</div><div class="player-score">Voeg spelers toe om te beginnen!</div></div></div>';
+        }
+
+        // Update round display
+        document.getElementById('currentRound').textContent = this.currentRound;
+        this.updatePlayerSelect();
+    }
+
+    showSimplePopup(player, score) {
         const overlay = document.getElementById('animationOverlay');
         const animation = document.getElementById('scoreAnimation');
         const photoElement = document.getElementById('animationPlayerPhoto');
         const nameElement = document.getElementById('animationPlayerName');
-        const positionElement = document.getElementById('animationPosition');
         const scoreElement = document.getElementById('animationScore');
         const rankElement = document.getElementById('animationRank');
-
-        // Hide all elements initially
-        positionElement.style.display = 'none';
-        scoreElement.style.display = 'none';
-        rankElement.style.display = 'none';
 
         // Set photo and name
         if (player.photo) {
@@ -109,88 +164,28 @@ class SportsLeaderboard {
         }
 
         nameElement.textContent = player.name;
+        scoreElement.textContent = `+${score} punten`;
         
+        // Calculate rank
+        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        const rank = sortedPlayers.findIndex(p => p.id === player.id) + 1;
+        const rankText = this.getRankText(rank);
+        rankElement.textContent = rankText;
+
+        // Show popup
         overlay.style.display = 'flex';
         
         setTimeout(() => {
             animation.classList.add('show');
         }, 100);
 
-        // Phase 1: Show current position (2 seconds)
+        // Hide popup after 3 seconds
         setTimeout(() => {
-            positionElement.style.display = 'block';
-            positionElement.textContent = `Huidige positie: ${oldPosition}`;
-            positionElement.classList.add('position-show');
-        }, 600);
-
-        // Phase 2: Show movement animation (3 seconds)
-        setTimeout(() => {
-            if (newPosition < oldPosition) {
-                // Moving up
-                this.animatePositionChange(positionElement, oldPosition, newPosition, true);
-            } else if (newPosition > oldPosition) {
-                // Moving down
-                this.animatePositionChange(positionElement, oldPosition, newPosition, false);
-            } else {
-                // No position change
-                positionElement.textContent = `Blijft op positie: ${oldPosition}`;
-                positionElement.className = 'position-no-change';
-            }
-        }, 2600);
-
-        // Phase 3: Reveal score (1 second)
-        setTimeout(() => {
-            scoreElement.style.display = 'block';
-            scoreElement.textContent = `+${score} punten`;
-            scoreElement.classList.add('score-reveal');
-        }, 5600);
-
-        // Phase 4: Show final rank (1 second)
-        setTimeout(() => {
-            rankElement.style.display = 'block';
-            const rankText = this.getRankText(newPosition);
-            rankElement.textContent = rankText;
-            rankElement.classList.add('rank-reveal');
-        }, 6600);
-
-        // Phase 5: Update leaderboard and cleanup
-        setTimeout(() => {
-            this.updateDisplay();
-            this.saveData();
-            
-            // Hide animation
             animation.classList.remove('show');
             setTimeout(() => {
                 overlay.style.display = 'none';
-                // Reset classes
-                positionElement.className = '';
-                scoreElement.className = 'score-display';
-                rankElement.className = '';
             }, 500);
-        }, 8100);
-    }
-
-    animatePositionChange(element, oldPos, newPos, movingUp) {
-        const positions = [];
-        const step = movingUp ? -1 : 1;
-        
-        for (let i = oldPos; movingUp ? i >= newPos : i <= newPos; i += step) {
-            positions.push(i);
-        }
-
-        let currentIndex = 0;
-        element.className = movingUp ? 'position-moving-up' : 'position-moving-down';
-
-        const interval = setInterval(() => {
-            if (currentIndex < positions.length) {
-                element.textContent = `${movingUp ? '⬆️' : '⬇️'} Positie: ${positions[currentIndex]}`;
-                currentIndex++;
-            } else {
-                clearInterval(interval);
-                element.textContent = `Nieuwe positie: ${newPos}!`;
-                element.className = movingUp ? 'position-final-up' : 'position-final-down';
-            }
-        }, 300);
+        }, 3000);
     }
 
     getRankText(rank) {
