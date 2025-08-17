@@ -104,177 +104,47 @@ class SportsLeaderboard {
     createConfetti() {
         console.log('🎊 createConfetti() called!');
         
-        // Check if tsParticles is loaded
-        if (typeof tsParticles === 'undefined') {
-            console.error('❌ tsParticles library not loaded!');
+        // Check if confetti library is loaded
+        if (typeof confetti === 'undefined') {
+            console.error('❌ Canvas-confetti library not loaded!');
             return;
         }
 
-        console.log('✅ tsParticles library is available');
+        console.log('✅ Canvas-confetti library is available');
+        console.log('🚀 Firing confetti from bottom corners to center!');
 
-        // Clear any existing particles
-        try {
-            const container = tsParticles.domItem(0);
-            if (container) {
-                container.destroy();
-            }
-        } catch (e) {
-            console.log('No existing particles to clean up');
-        }
-
-        // Make sure the container is properly styled
-        const tsparticlesDiv = document.getElementById('tsparticles');
-        tsparticlesDiv.style.position = 'fixed';
-        tsparticlesDiv.style.top = '0';
-        tsparticlesDiv.style.left = '0';
-        tsparticlesDiv.style.width = '100%';
-        tsparticlesDiv.style.height = '100%';
-        tsparticlesDiv.style.zIndex = '999999';
-        tsparticlesDiv.style.pointerEvents = 'none';
-
-        console.log('🚀 Loading VERY VISIBLE confetti particles...');
-
-        // Much more visible confetti configuration
-        const confettiConfig = {
-            fullScreen: {
-                enable: false, // Use the positioned div instead
-                zIndex: 999999
-            },
-            fpsLimit: 120,
-            particles: {
-                number: {
-                    value: 0 // We'll use emitters instead
-                },
-                color: {
-                    value: ["#FFD700", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FF9FF3", "#54A0FF"]
-                },
-                shape: {
-                    type: ["circle", "square", "triangle"]
-                },
-                opacity: {
-                    value: 1, // Full opacity
-                    animation: {
-                        enable: true,
-                        speed: 1,
-                        startValue: "max",
-                        destroy: "min"
-                    }
-                },
-                size: {
-                    value: { min: 8, max: 15 } // Much bigger particles
-                },
-                life: {
-                    duration: {
-                        sync: false,
-                        value: { min: 3, max: 6 } // Live longer
-                    },
-                    count: 1
-                },
-                move: {
-                    enable: true,
-                    gravity: {
-                        enable: true,
-                        acceleration: 5, // Slower fall
-                        maxSpeed: 30
-                    },
-                    speed: { min: 10, max: 20 },
-                    decay: 0.01, // Less decay
-                    direction: "none",
-                    straight: false,
-                    outModes: {
-                        default: "destroy",
-                        top: "none"
-                    }
-                },
-                rotate: {
-                    value: { min: 0, max: 360 },
-                    direction: "random",
-                    animation: {
-                        enable: true,
-                        speed: 20
-                    }
-                }
-            },
-            emitters: [
-                // Left bottom corner - shoot towards center
-                {
-                    life: {
-                        count: 100, // More particles
-                        duration: 0.2,
-                        delay: 0
-                    },
-                    rate: {
-                        delay: 0.05,
-                        quantity: 15
-                    },
-                    size: {
-                        width: 5,
-                        height: 5
-                    },
-                    position: {
-                        x: 5,
-                        y: 95
-                    },
-                    direction: "top-right" // Towards center-top
-                },
-                // Right bottom corner - shoot towards center
-                {
-                    life: {
-                        count: 100, // More particles
-                        duration: 0.2,
-                        delay: 0.2
-                    },
-                    rate: {
-                        delay: 0.05,
-                        quantity: 15
-                    },
-                    size: {
-                        width: 5,
-                        height: 5
-                    },
-                    position: {
-                        x: 95,
-                        y: 95
-                    },
-                    direction: "top-left" // Towards center-top
-                },
-                // Center bottom - shoot straight up
-                {
-                    life: {
-                        count: 80,
-                        duration: 0.2,
-                        delay: 0.4
-                    },
-                    rate: {
-                        delay: 0.03,
-                        quantity: 20
-                    },
-                    size: {
-                        width: 15,
-                        height: 5
-                    },
-                    position: {
-                        x: 50,
-                        y: 100
-                    },
-                    direction: "top"
-                }
-            ]
-        };
-
-        // Load the particles
-        tsParticles.load("tsparticles", confettiConfig).then(container => {
-            console.log('✅ SUPER VISIBLE Confetti particles loaded successfully!');
-            console.log('Container info:', container);
-            
-            // Auto cleanup after 8 seconds
-            setTimeout(() => {
-                console.log('🧹 Cleaning up confetti...');
-                container.destroy();
-            }, 8000);
-        }).catch(error => {
-            console.error('❌ Error loading confetti:', error);
+        // Fire confetti from left bottom corner towards center
+        confetti({
+            particleCount: 60,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0.1, y: 0.9 },
+            colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
         });
+
+        // Fire confetti from right bottom corner towards center (slight delay)
+        setTimeout(() => {
+            confetti({
+                particleCount: 60,
+                angle: 120,
+                spread: 55,
+                origin: { x: 0.9, y: 0.9 },
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
+            });
+        }, 150);
+
+        // Fire confetti from center bottom straight up (more delay)
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 90,
+                spread: 100,
+                origin: { x: 0.5, y: 1.0 },
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
+            });
+        }, 300);
+
+        console.log('✅ Canvas-confetti fired successfully!');
     }
 
     getCurrentPositions() {
@@ -593,7 +463,7 @@ function resetAll() {
 
 // Test confetti function (for debugging)
 function testConfetti() {
-    console.log('🧪 Testing confetti manually...');
+    console.log('🧪 Testing canvas-confetti...');
     leaderboard.createConfetti();
 }
 
