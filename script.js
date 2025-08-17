@@ -64,58 +64,133 @@ class SportsLeaderboard {
             return;
         }
 
+        // Store old position for animation
+        const oldPosition = this.getPlayerPosition(player.id);
+
         // Add score to current round
         player.roundScores[this.currentRound - 1] = parseInt(score);
         player.totalScore += parseInt(score);
 
-        // Show animation
-        this.showScoreAnimation(player.name, score, player.photo);
+        // Calculate new position
+        const newPosition = this.getPlayerPosition(player.id);
 
-        this.updateDisplay();
-        this.saveData();
-        
+        // Show suspenseful animation
+        this.showSuspenseAnimation(player, oldPosition, newPosition, parseInt(score));
+
         // Clear inputs
         document.getElementById('playerSelect').value = '';
         document.getElementById('scoreInput').value = '';
     }
 
-    showScoreAnimation(playerName, score, playerPhoto) {
+    getPlayerPosition(playerId) {
+        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        return sortedPlayers.findIndex(p => p.id === playerId) + 1;
+    }
+
+    showSuspenseAnimation(player, oldPosition, newPosition, score) {
         const overlay = document.getElementById('animationOverlay');
         const animation = document.getElementById('scoreAnimation');
         const photoElement = document.getElementById('animationPlayerPhoto');
         const nameElement = document.getElementById('animationPlayerName');
+        const positionElement = document.getElementById('animationPosition');
         const scoreElement = document.getElementById('animationScore');
         const rankElement = document.getElementById('animationRank');
 
-        // Set photo
-        if (playerPhoto) {
-            photoElement.innerHTML = `<img src="${playerPhoto}" alt="${playerName}" class="player-photo-big">`;
+        // Hide all elements initially
+        positionElement.style.display = 'none';
+        scoreElement.style.display = 'none';
+        rankElement.style.display = 'none';
+
+        // Set photo and name
+        if (player.photo) {
+            photoElement.innerHTML = `<img src="${player.photo}" alt="${player.name}" class="player-photo-big">`;
         } else {
             photoElement.innerHTML = `<div class="player-photo-big default">👑</div>`;
         }
 
-        nameElement.textContent = playerName;
-        scoreElement.textContent = `+${score} punten`;
+        nameElement.textContent = player.name;
         
-        // Calculate new rank
-        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        const rank = sortedPlayers.findIndex(p => p.name === playerName) + 1;
-        const rankText = this.getRankText(rank);
-        
-        rankElement.textContent = rankText;
-
         overlay.style.display = 'flex';
         
         setTimeout(() => {
             animation.classList.add('show');
         }, 100);
 
+        // Phase 1: Show current position (2 seconds)
         setTimeout(() => {
+            positionElement.style.display = 'block';
+            positionElement.textContent = `Huidige positie: ${oldPosition}`;
+            positionElement.classList.add('position-show');
+        }, 600);
+
+        // Phase 2: Show movement animation (3 seconds)
+        setTimeout(() => {
+            if (newPosition < oldPosition) {
+                // Moving up
+                this.animatePositionChange(positionElement, oldPosition, newPosition, true);
+            } else if (newPosition > oldPosition) {
+                // Moving down
+                this.animatePositionChange(positionElement, oldPosition, newPosition, false);
+            } else {
+                // No position change
+                positionElement.textContent = `Blijft op positie: ${oldPosition}`;
+                positionElement.className = 'position-no-change';
+            }
+        }, 2600);
+
+        // Phase 3: Reveal score (1 second)
+        setTimeout(() => {
+            scoreElement.style.display = 'block';
+            scoreElement.textContent = `+${score} punten`;
+            scoreElement.classList.add('score-reveal');
+        }, 5600);
+
+        // Phase 4: Show final rank (1 second)
+        setTimeout(() => {
+            rankElement.style.display = 'block';
+            const rankText = this.getRankText(newPosition);
+            rankElement.textContent = rankText;
+            rankElement.classList.add('rank-reveal');
+        }, 6600);
+
+        // Phase 5: Update leaderboard and cleanup
+        setTimeout(() => {
+            this.updateDisplay();
+            this.saveData();
+            
+            // Hide animation
             animation.classList.remove('show');
             setTimeout(() => {
                 overlay.style.display = 'none';
+                // Reset classes
+                positionElement.className = '';
+                scoreElement.className = 'score-display';
+                rankElement.className = '';
             }, 500);
-        }, 3000);
+        }, 8100);
+    }
+
+    animatePositionChange(element, oldPos, newPos, movingUp) {
+        const positions = [];
+        const step = movingUp ? -1 : 1;
+        
+        for (let i = oldPos; movingUp ? i >= newPos : i <= newPos; i += step) {
+            positions.push(i);
+        }
+
+        let currentIndex = 0;
+        element.className = movingUp ? 'position-moving-up' : 'position-moving-down';
+
+        const interval = setInterval(() => {
+            if (currentIndex < positions.length) {
+                element.textContent = `${movingUp ? '⬆️' : '⬇️'} Positie: ${positions[currentIndex]}`;
+                currentIndex++;
+            } else {
+                clearInterval(interval);
+                element.textContent = `Nieuwe positie: ${newPos}!`;
+                element.className = movingUp ? 'position-final-up' : 'position-final-down';
+            }
+        }, 300);
     }
 
     getRankText(rank) {
