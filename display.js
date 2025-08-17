@@ -2,10 +2,10 @@ class DisplayLeaderboard {
     constructor() {
         this.players = [];
         this.currentRound = 1;
-        this.lastUpdateHash = '';
+        this.lastAnimationTimestamp = 0;
         this.loadData();
         this.updateDisplay();
-        this.startAutoRefresh();
+        this.startWatching();
     }
 
     loadData() {
@@ -17,65 +17,114 @@ class DisplayLeaderboard {
         }
     }
 
-    startAutoRefresh() {
-        // Check for updates every 2 seconds
+    startWatching() {
+        // Watch for data changes every 500ms
         setInterval(() => {
             this.checkForUpdates();
-        }, 2000);
+        }, 500);
+
+        // Watch for animation triggers every 100ms
+        setInterval(() => {
+            this.checkForAnimationTrigger();
+        }, 100);
     }
 
     checkForUpdates() {
         const saved = localStorage.getItem('sportsLeaderboard');
         if (saved) {
-            // Create a hash of the data to detect changes
-            const currentHash = this.createHash(saved);
+            const data = JSON.parse(saved);
+            const hasChanged = JSON.stringify(this.players) !== JSON.stringify(data.players) || 
+                             this.currentRound !== data.currentRound;
             
-            if (currentHash !== this.lastUpdateHash) {
-                console.log('🔄 Data updated, refreshing display...');
-                
-                // Store old first place for confetti detection
-                const oldFirstPlace = this.getFirstPlace();
-                
-                // Load new data
-                const data = JSON.parse(saved);
+            if (hasChanged) {
                 this.players = data.players || [];
                 this.currentRound = data.currentRound || 1;
-                
-                // Check for new first place
-                const newFirstPlace = this.getFirstPlace();
-                
-                // Trigger confetti if someone new became first
-                if (oldFirstPlace && newFirstPlace && 
-                    oldFirstPlace.id !== newFirstPlace.id) {
-                    setTimeout(() => {
-                        this.createConfetti();
-                    }, 500);
-                }
-                
                 this.updateDisplay();
-                this.lastUpdateHash = currentHash;
             }
         }
     }
 
-    createHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32bit integer
+    checkForAnimationTrigger() {
+        const triggerData = localStorage.getItem('animationTrigger');
+        if (triggerData) {
+            try {
+                const trigger = JSON.parse(triggerData);
+                
+                // Only process if this is a new trigger
+                if (trigger.timestamp > this.lastAnimationTimestamp) {
+                    this.lastAnimationTimestamp = trigger.timestamp;
+                    console.log('🎬 Animation trigger received:', trigger);
+                    
+                    // Start the animation sequence
+                    this.performAnimation(trigger);
+                    
+                    // Clear the trigger
+                    localStorage.removeItem('animationTrigger');
+                }
+            } catch (e) {
+                console.error('Error parsing animation trigger:', e);
+                localStorage.removeItem('animationTrigger');
+            }
         }
-        return hash.toString();
     }
 
-    getFirstPlace() {
-        if (this.players.length === 0) return null;
-        const sorted = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        return sorted[0];
+    performAnimation(trigger) {
+        console.log('🎭 Starting animation sequence for:', trigger.playerName);
+        
+        // First: show the score popup animation
+        this.showScorePopup(trigger);
+        
+        // Then: show confetti if they became first
+        if (!trigger.wasFirst && trigger.isNowFirst) {
+            setTimeout(() => {
+                console.log('🎊 Triggering confetti for new leader!');
+                this.createConfetti();
+            }, 2000); // Show confetti 2 seconds after popup
+        }
+    }
+
+    showScorePopup(trigger) {
+        const overlay = document.getElementById('animationOverlay');
+        const animation = document.getElementById('scoreAnimation');
+        const photoElement = document.getElementById('animationPlayerPhoto');
+        const nameElement = document.getElementById('animationPlayerName');
+        const scoreElement = document.getElementById('animationScore');
+        const rankElement = document.getElementById('animationRank');
+
+        // Set photo and name
+        if (trigger.playerPhoto) {
+            photoElement.innerHTML = `<img src="${trigger.playerPhoto}" alt="${trigger.playerName}" class="player-photo-big">`;
+        } else {
+            photoElement.innerHTML = `<div class="player-photo-big default">👑</div>`;
+        }
+
+        nameElement.textContent = trigger.playerName;
+        scoreElement.textContent = `+${trigger.score} punten`;
+        
+        // Calculate current rank
+        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        const rank = sortedPlayers.findIndex(p => p.id === trigger.playerId) + 1;
+        const rankText = this.getRankText(rank);
+        rankElement.textContent = rankText;
+
+        // Show popup
+        overlay.style.display = 'flex';
+        
+        setTimeout(() => {
+            animation.classList.add('show');
+        }, 100);
+
+        // Hide popup after 4 seconds
+        setTimeout(() => {
+            animation.classList.remove('show');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }, 4000);
     }
 
     createConfetti() {
-        console.log('🎊 Confetti triggered on display page!');
+        console.log('🎊 Creating confetti display!');
         
         // Check if confetti library is loaded
         if (typeof confetti === 'undefined') {
@@ -85,7 +134,7 @@ class DisplayLeaderboard {
 
         // Fire confetti from left bottom corner towards center
         confetti({
-            particleCount: 80,
+            particleCount: 100,
             angle: 60,
             spread: 70,
             startVelocity: 60,
@@ -96,7 +145,7 @@ class DisplayLeaderboard {
         // Fire confetti from right bottom corner towards center
         setTimeout(() => {
             confetti({
-                particleCount: 80,
+                particleCount: 100,
                 angle: 120,
                 spread: 70,
                 startVelocity: 60,
@@ -108,7 +157,7 @@ class DisplayLeaderboard {
         // Fire confetti from center bottom straight up
         setTimeout(() => {
             confetti({
-                particleCount: 60,
+                particleCount: 80,
                 angle: 90,
                 spread: 100,
                 startVelocity: 70,
@@ -117,10 +166,10 @@ class DisplayLeaderboard {
             });
         }, 300);
 
-        // Add top corners for extra effect
+        // Add top corners for extra spectacular effect
         setTimeout(() => {
             confetti({
-                particleCount: 60,
+                particleCount: 70,
                 angle: 315,
                 spread: 55,
                 startVelocity: 50,
@@ -131,7 +180,7 @@ class DisplayLeaderboard {
 
         setTimeout(() => {
             confetti({
-                particleCount: 60,
+                particleCount: 70,
                 angle: 225,
                 spread: 55,
                 startVelocity: 50,
@@ -140,7 +189,7 @@ class DisplayLeaderboard {
             });
         }, 250);
 
-        console.log('✅ Full corner confetti display fired!');
+        console.log('✅ Full spectacular confetti display fired!');
     }
 
     updateDisplay() {
@@ -207,22 +256,11 @@ class DisplayLeaderboard {
 // Initialize the display leaderboard
 const displayLeaderboard = new DisplayLeaderboard();
 
-// Add some visual feedback when the page loads
-console.log('📺 Display page loaded - watching for updates...');
-
 // Test function for manual confetti (can be called from console)
 function testConfetti() {
     console.log('🧪 Testing confetti on display page...');
     displayLeaderboard.createConfetti();
 }
 
-// Visual indicator that auto-refresh is working
-let refreshIndicator = 0;
-setInterval(() => {
-    refreshIndicator = (refreshIndicator + 1) % 4;
-    const dots = '.'.repeat(refreshIndicator + 1);
-    const refreshElement = document.querySelector('.auto-refresh');
-    if (refreshElement) {
-        refreshElement.textContent = `🔄 Automatisch ververst elke 2 seconden${dots}`;
-    }
-}, 500);
+// Add some visual feedback when the page loads
+console.log('📺 Display page loaded - watching for animation triggers...');
