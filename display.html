@@ -5,84 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sportsman van het Jaar - Leaderboard</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .page-selector {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin-bottom: 20px;
-        }
-        .page-selector h2 {
-            color: white;
-            margin: 0 0 15px 0;
-        }
-        .page-links {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .page-link {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        .page-link:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .page-link.current {
-            background: rgba(255, 255, 255, 0.4);
-            border-color: rgba(255, 255, 255, 0.8);
-        }
-        .display-notice {
-            background: #27ae60;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .auto-refresh {
-            background: #3498db;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 14px;
-        }
-        .display-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-    </style>
 </head>
 <body>
-    <div class="page-selector">
-        <h2>🏆 Sportsman van het Jaar - Leaderboard</h2>
-        <div class="page-links">
-            <a href="index.html" class="page-link">📊 Admin Controls</a>
-            <a href="display.html" class="page-link current">📺 Leaderboard Display</a>
-        </div>
-    </div>
-
-    <div class="display-container">
-        <div class="display-notice">
-            📺 PUBLIEKE WEERGAVE - Deze pagina updates automatisch wanneer scores worden toegevoegd
-        </div>
-
-        <div class="auto-refresh">
-            🔄 Automatisch ververst elke 2 seconden
-        </div>
-
+    <div class="container">
         <div class="header">
             <h1>🏆 SPORTSMAN VAN HET JAAR 🏆</h1>
             <h2>Wie zal de eeuwige roem behalen en zijn rijk tot glorie leiden?</h2>
