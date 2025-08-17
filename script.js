@@ -122,12 +122,22 @@ class SportsLeaderboard {
             console.log('No existing particles to clean up');
         }
 
-        console.log('🚀 Loading confetti particles...');
+        // Make sure the container is properly styled
+        const tsparticlesDiv = document.getElementById('tsparticles');
+        tsparticlesDiv.style.position = 'fixed';
+        tsparticlesDiv.style.top = '0';
+        tsparticlesDiv.style.left = '0';
+        tsparticlesDiv.style.width = '100%';
+        tsparticlesDiv.style.height = '100%';
+        tsparticlesDiv.style.zIndex = '999999';
+        tsparticlesDiv.style.pointerEvents = 'none';
 
-        // Confetti configuration that shoots from bottom corners to center
+        console.log('🚀 Loading VERY VISIBLE confetti particles...');
+
+        // Much more visible confetti configuration
         const confettiConfig = {
             fullScreen: {
-                enable: true,
+                enable: false, // Use the positioned div instead
                 zIndex: 999999
             },
             fpsLimit: 120,
@@ -136,27 +146,27 @@ class SportsLeaderboard {
                     value: 0 // We'll use emitters instead
                 },
                 color: {
-                    value: ["#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#ff9ff3", "#54a0ff"]
+                    value: ["#FFD700", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FF9FF3", "#54A0FF"]
                 },
                 shape: {
-                    type: ["circle", "square"]
+                    type: ["circle", "square", "triangle"]
                 },
                 opacity: {
-                    value: { min: 0.3, max: 1 },
+                    value: 1, // Full opacity
                     animation: {
                         enable: true,
-                        speed: 3,
+                        speed: 1,
                         startValue: "max",
                         destroy: "min"
                     }
                 },
                 size: {
-                    value: { min: 4, max: 8 }
+                    value: { min: 8, max: 15 } // Much bigger particles
                 },
                 life: {
                     duration: {
                         sync: false,
-                        value: { min: 2, max: 4 }
+                        value: { min: 3, max: 6 } // Live longer
                     },
                     count: 1
                 },
@@ -164,11 +174,11 @@ class SportsLeaderboard {
                     enable: true,
                     gravity: {
                         enable: true,
-                        acceleration: 9.81,
-                        maxSpeed: 50
+                        acceleration: 5, // Slower fall
+                        maxSpeed: 30
                     },
-                    speed: { min: 15, max: 25 },
-                    decay: 0.1,
+                    speed: { min: 10, max: 20 },
+                    decay: 0.01, // Less decay
                     direction: "none",
                     straight: false,
                     outModes: {
@@ -181,110 +191,87 @@ class SportsLeaderboard {
                     direction: "random",
                     animation: {
                         enable: true,
-                        speed: 30
+                        speed: 20
                     }
                 }
             },
             emitters: [
-                // Left bottom corner
+                // Left bottom corner - shoot towards center
                 {
                     life: {
-                        count: 60,
-                        duration: 0.1,
+                        count: 100, // More particles
+                        duration: 0.2,
                         delay: 0
-                    },
-                    rate: {
-                        delay: 0.1,
-                        quantity: 10
-                    },
-                    size: {
-                        width: 0,
-                        height: 0
-                    },
-                    position: {
-                        x: 10,
-                        y: 95
-                    },
-                    direction: "top",
-                    particles: {
-                        move: {
-                            angle: {
-                                offset: 45,
-                                value: 45
-                            }
-                        }
-                    }
-                },
-                // Right bottom corner
-                {
-                    life: {
-                        count: 60,
-                        duration: 0.1,
-                        delay: 0.15
-                    },
-                    rate: {
-                        delay: 0.1,
-                        quantity: 10
-                    },
-                    size: {
-                        width: 0,
-                        height: 0
-                    },
-                    position: {
-                        x: 90,
-                        y: 95
-                    },
-                    direction: "top",
-                    particles: {
-                        move: {
-                            angle: {
-                                offset: 135,
-                                value: 135
-                            }
-                        }
-                    }
-                },
-                // Center bottom
-                {
-                    life: {
-                        count: 40,
-                        duration: 0.1,
-                        delay: 0.3
                     },
                     rate: {
                         delay: 0.05,
                         quantity: 15
                     },
                     size: {
-                        width: 10,
-                        height: 0
+                        width: 5,
+                        height: 5
+                    },
+                    position: {
+                        x: 5,
+                        y: 95
+                    },
+                    direction: "top-right" // Towards center-top
+                },
+                // Right bottom corner - shoot towards center
+                {
+                    life: {
+                        count: 100, // More particles
+                        duration: 0.2,
+                        delay: 0.2
+                    },
+                    rate: {
+                        delay: 0.05,
+                        quantity: 15
+                    },
+                    size: {
+                        width: 5,
+                        height: 5
+                    },
+                    position: {
+                        x: 95,
+                        y: 95
+                    },
+                    direction: "top-left" // Towards center-top
+                },
+                // Center bottom - shoot straight up
+                {
+                    life: {
+                        count: 80,
+                        duration: 0.2,
+                        delay: 0.4
+                    },
+                    rate: {
+                        delay: 0.03,
+                        quantity: 20
+                    },
+                    size: {
+                        width: 15,
+                        height: 5
                     },
                     position: {
                         x: 50,
                         y: 100
                     },
-                    direction: "top",
-                    particles: {
-                        move: {
-                            angle: {
-                                offset: 90,
-                                value: 90
-                            }
-                        }
-                    }
+                    direction: "top"
                 }
             ]
         };
 
         // Load the particles
         tsParticles.load("tsparticles", confettiConfig).then(container => {
-            console.log('✅ Confetti particles loaded successfully!');
+            console.log('✅ SUPER VISIBLE Confetti particles loaded successfully!');
+            console.log('Container info:', container);
             
-            // Auto cleanup after 5 seconds
+            // Auto cleanup after 8 seconds
             setTimeout(() => {
                 console.log('🧹 Cleaning up confetti...');
                 container.destroy();
-            }, 5000);
+            }, 8000);
         }).catch(error => {
             console.error('❌ Error loading confetti:', error);
         });
