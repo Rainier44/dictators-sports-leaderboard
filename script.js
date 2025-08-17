@@ -64,14 +64,9 @@ class SportsLeaderboard {
             return;
         }
 
-        // Store old positions before updating
-        const oldPositions = this.getCurrentPositions();
-        
         // Check if player was first before scoring
         const sortedBefore = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         const wasFirst = sortedBefore.length > 0 && sortedBefore[0].id == playerId;
-
-        console.log(`Player ${player.name} was first before: ${wasFirst}`);
 
         // Add score to current round
         player.roundScores[this.currentRound - 1] = parseInt(score);
@@ -81,281 +76,74 @@ class SportsLeaderboard {
         const sortedAfter = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         const isNowFirst = sortedAfter[0].id == playerId;
 
-        console.log(`Player ${player.name} is now first: ${isNowFirst}`);
+        // Trigger animation on display page
+        this.triggerDisplayAnimation(player, parseInt(score), wasFirst, isNowFirst);
 
-        // Show confetti if someone just became first
-        if (!wasFirst && isNowFirst) {
-            console.log('🎉 CONFETTI SHOULD TRIGGER! Player became #1');
-            setTimeout(() => {
-                this.createConfetti();
-            }, 1600);
-        } else {
-            console.log('No confetti - either was already first or not first now');
-        }
-
-        // Animate the movement, then show popup
-        this.animateToNewPositions(oldPositions, playerId, parseInt(score));
+        // Update and save
+        this.updateDisplay();
+        this.saveData();
 
         // Clear inputs
         document.getElementById('playerSelect').value = '';
         document.getElementById('scoreInput').value = '';
     }
 
-    createConfetti() {
-        console.log('🎊 createConfetti() called!');
+    triggerDisplayAnimation(player, score, wasFirst, isNowFirst) {
+        // Store animation trigger in localStorage for display page
+        const animationData = {
+            playerId: player.id,
+            playerName: player.name,
+            playerPhoto: player.photo,
+            score: score,
+            wasFirst: wasFirst,
+            isNowFirst: isNowFirst,
+            timestamp: Date.now(),
+            trigger: true
+        };
         
-        // Check if confetti library is loaded
-        if (typeof confetti === 'undefined') {
-            console.error('❌ Canvas-confetti library not loaded!');
-            return;
-        }
-
-        console.log('✅ Canvas-confetti library is available');
-        console.log('🚀 Firing confetti from bottom corners to center!');
-
-        // Fire confetti from left bottom corner towards center
-        confetti({
-            particleCount: 60,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0.1, y: 0.9 },
-            colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
-        });
-
-        // Fire confetti from right bottom corner towards center (slight delay)
-        setTimeout(() => {
-            confetti({
-                particleCount: 60,
-                angle: 120,
-                spread: 55,
-                origin: { x: 0.9, y: 0.9 },
-                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
-            });
-        }, 150);
-
-        // Fire confetti from center bottom straight up (more delay)
-        setTimeout(() => {
-            confetti({
-                particleCount: 50,
-                angle: 90,
-                spread: 100,
-                origin: { x: 0.5, y: 1.0 },
-                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
-            });
-        }, 300);
-
-        console.log('✅ Canvas-confetti fired successfully!');
-    }
-
-    getCurrentPositions() {
-        const leaderboardList = document.getElementById('leaderboardList');
-        const rows = Array.from(leaderboardList.children);
-        const positions = {};
-        
-        rows.forEach((row, index) => {
-            const playerId = row.getAttribute('data-player-id');
-            if (playerId) {
-                positions[playerId] = {
-                    element: row,
-                    oldIndex: index,
-                    rect: row.getBoundingClientRect()
-                };
-            }
-        });
-        
-        return positions;
-    }
-
-    animateToNewPositions(oldPositions, scoringPlayerId, score) {
-        // Sort players by new scores
-        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        const leaderboardList = document.getElementById('leaderboardList');
-        
-        // Calculate new positions
-        const newPositions = {};
-        sortedPlayers.forEach((player, newIndex) => {
-            newPositions[player.id] = newIndex;
-        });
-
-        // Update content but keep elements in old positions temporarily
-        this.updatePlayerRowContents();
-
-        // Animate each row to its new position
-        Object.keys(oldPositions).forEach(playerId => {
-            const oldPos = oldPositions[playerId];
-            const newIndex = newPositions[playerId];
-            const element = oldPos.element;
-            
-            if (oldPos.oldIndex !== newIndex) {
-                // Calculate the distance to move
-                const rowHeight = 115; // approximate height + gap
-                const moveDistance = (newIndex - oldPos.oldIndex) * rowHeight;
-                
-                // Start from old position
-                element.style.transform = `translateY(0px)`;
-                element.style.transition = 'none';
-                
-                // Force reflow
-                element.offsetHeight;
-                
-                // Animate to new position
-                element.style.transition = 'transform 1.5s ease-in-out';
-                element.style.transform = `translateY(${moveDistance}px)`;
-            }
-
-            // Highlight the scoring player
-            if (playerId == scoringPlayerId) {
-                element.classList.add('player-updating');
-                setTimeout(() => {
-                    element.classList.remove('player-updating');
-                }, 2000);
-            }
-        });
-
-        // After animation completes, rebuild leaderboard properly
-        setTimeout(() => {
-            this.updateDisplay();
-            this.saveData();
-            
-            // Show popup after movement animation
-            setTimeout(() => {
-                const player = this.players.find(p => p.id == scoringPlayerId);
-                this.showSimplePopup(player, score);
-            }, 200);
-        }, 1500);
-    }
-
-    updatePlayerRowContents() {
-        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        const leaderboardList = document.getElementById('leaderboardList');
-        const rows = Array.from(leaderboardList.children);
-        
-        // Update content of existing rows
-        sortedPlayers.forEach((player, index) => {
-            if (rows[index]) {
-                const rank = index + 1;
-                const row = rows[index];
-                
-                // Update rank number
-                const rankElement = row.querySelector('.rank-number');
-                if (rankElement) rankElement.textContent = rank;
-                
-                // Update total score
-                const scoreElement = row.querySelector('.total-score');
-                if (scoreElement) scoreElement.textContent = player.totalScore;
-                
-                // Update round scores
-                const roundScoresDisplay = player.roundScores.map((score, idx) => 
-                    `R${idx + 1}: ${score !== undefined ? score : '-'}`
-                ).join(', ') || 'Nog geen scores';
-                
-                const playerScoreElement = row.querySelector('.player-score');
-                if (playerScoreElement) playerScoreElement.textContent = roundScoresDisplay;
-                
-                // Update row classes
-                row.className = `player-row rank-${rank <= 3 ? rank : 'other'}`;
-                row.setAttribute('data-player-id', player.id);
-            }
-        });
-    }
-
-    showSimplePopup(player, score) {
-        const overlay = document.getElementById('animationOverlay');
-        const animation = document.getElementById('scoreAnimation');
-        const photoElement = document.getElementById('animationPlayerPhoto');
-        const nameElement = document.getElementById('animationPlayerName');
-        const scoreElement = document.getElementById('animationScore');
-        const rankElement = document.getElementById('animationRank');
-
-        // Set photo and name
-        if (player.photo) {
-            photoElement.innerHTML = `<img src="${player.photo}" alt="${player.name}" class="player-photo-big">`;
-        } else {
-            photoElement.innerHTML = `<div class="player-photo-big default">👑</div>`;
-        }
-
-        nameElement.textContent = player.name;
-        scoreElement.textContent = `+${score} punten`;
-        
-        // Calculate rank
-        const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        const rank = sortedPlayers.findIndex(p => p.id === player.id) + 1;
-        const rankText = this.getRankText(rank);
-        rankElement.textContent = rankText;
-
-        // Show popup
-        overlay.style.display = 'flex';
-        
-        setTimeout(() => {
-            animation.classList.add('show');
-        }, 100);
-
-        // Hide popup after 3 seconds
-        setTimeout(() => {
-            animation.classList.remove('show');
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 500);
-        }, 3000);
-    }
-
-    getRankText(rank) {
-        if (rank === 1) return '👑 HEERSER! 👑';
-        if (rank === 2) return '🥈 2de Plaats';
-        if (rank === 3) return '🥉 3de Plaats';
-        return `${rank}de Plaats`;
+        localStorage.setItem('animationTrigger', JSON.stringify(animationData));
+        console.log('🎬 Animation triggered for display page:', player.name, '+' + score);
     }
 
     updateDisplay() {
-        this.updateLeaderboard();
+        this.updateSimpleLeaderboard();
         this.updatePlayerSelect();
         document.getElementById('currentRound').textContent = this.currentRound;
     }
 
-    updateLeaderboard() {
-        const leaderboardList = document.getElementById('leaderboardList');
+    updateSimpleLeaderboard() {
+        const leaderboardElement = document.getElementById('simpleLeaderboard');
+        if (!leaderboardElement) return;
         
         // Sort players by total score
         const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         
-        leaderboardList.innerHTML = '';
+        leaderboardElement.innerHTML = '';
         
+        if (sortedPlayers.length === 0) {
+            leaderboardElement.innerHTML = '<div class="simple-player"><div class="simple-name">Nog geen spelers toegevoegd</div></div>';
+            return;
+        }
+
         sortedPlayers.forEach((player, index) => {
             const rank = index + 1;
-            const playerRow = document.createElement('div');
-            playerRow.className = `player-row rank-${rank <= 3 ? rank : 'other'}`;
-            playerRow.setAttribute('data-player-id', player.id);
+            const playerDiv = document.createElement('div');
+            playerDiv.className = `simple-player rank-${rank <= 3 ? rank : 'other'}`;
             
-            // Show all round scores
-            const roundScoresDisplay = player.roundScores.map((score, idx) => 
-                `R${idx + 1}: ${score !== undefined ? score : '-'}`
-            ).join(', ') || 'Nog geen scores';
-            
-            // Create photo element
-            const photoHtml = player.photo 
-                ? `<img src="${player.photo}" alt="${player.name}" class="player-photo">`
-                : `<div class="player-photo default">👑</div>`;
-            
-            playerRow.innerHTML = `
-                <div class="rank-number">${rank}</div>
-                ${photoHtml}
-                <div class="player-info">
-                    <div class="player-name">${player.name}</div>
-                    <div class="player-score">${roundScoresDisplay}</div>
-                </div>
-                <div class="total-score">${player.totalScore}</div>
+            playerDiv.innerHTML = `
+                <div class="simple-rank">${rank}</div>
+                <div class="simple-name">${player.name}</div>
+                <div class="simple-score">${player.totalScore}pts</div>
             `;
             
-            leaderboardList.appendChild(playerRow);
+            leaderboardElement.appendChild(playerDiv);
         });
-        
-        if (this.players.length === 0) {
-            leaderboardList.innerHTML = '<div class="player-row"><div class="player-info"><div class="player-name">Nog geen spelers</div><div class="player-score">Voeg spelers toe om te beginnen!</div></div></div>';
-        }
     }
 
     updatePlayerSelect() {
         const select = document.getElementById('playerSelect');
+        if (!select) return;
+        
         select.innerHTML = '<option value="">Selecteer Speler</option>';
         
         this.players.forEach(player => {
@@ -410,6 +198,8 @@ class SportsLeaderboard {
             this.currentRound = 1;
             this.updateDisplay();
             this.saveData();
+            // Clear animation triggers
+            localStorage.removeItem('animationTrigger');
         }
     }
 
@@ -461,10 +251,16 @@ function resetAll() {
     leaderboard.resetAll();
 }
 
-// Test confetti function (for debugging)
-function testConfetti() {
-    console.log('🧪 Testing canvas-confetti...');
-    leaderboard.createConfetti();
+// Test animation function
+function testAnimation() {
+    // Create a fake animation trigger for testing
+    const testPlayer = leaderboard.players[0];
+    if (testPlayer) {
+        leaderboard.triggerDisplayAnimation(testPlayer, 10, false, true);
+        alert('Test animatie verstuurd naar display pagina!');
+    } else {
+        alert('Voeg eerst een speler toe om de animatie te testen.');
+    }
 }
 
 // Keyboard shortcuts
