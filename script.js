@@ -95,92 +95,183 @@ class SportsLeaderboard {
     }
 
     createConfetti() {
-        // Use tsParticles confetti from both bottom corners
+        // Check if tsParticles is loaded
+        if (typeof tsParticles === 'undefined') {
+            console.error('tsParticles library not loaded!');
+            return;
+        }
+
+        // Configuration for confetti shooting from bottom corners to center
+        const confettiOptions = {
+            fullScreen: { 
+                enable: false,
+                zIndex: 999 
+            },
+            particles: {
+                number: { value: 0 },
+                color: { 
+                    value: ["#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#ff9ff3", "#54a0ff"] 
+                },
+                shape: { 
+                    type: ["circle", "square", "triangle"],
+                    options: {}
+                },
+                opacity: { 
+                    value: { min: 0.3, max: 1 },
+                    animation: { 
+                        enable: true, 
+                        speed: 3, 
+                        startValue: "max", 
+                        destroy: "min" 
+                    } 
+                },
+                size: { 
+                    value: { min: 4, max: 8 }
+                },
+                links: { enable: false },
+                life: { 
+                    duration: { sync: false, value: { min: 2, max: 4 } },
+                    count: 1 
+                },
+                move: { 
+                    enable: true,
+                    gravity: { 
+                        enable: true, 
+                        acceleration: 15 
+                    },
+                    speed: { min: 15, max: 25 },
+                    decay: 0.05,
+                    direction: "none",
+                    straight: false,
+                    outModes: { 
+                        default: "destroy",
+                        top: "none" 
+                    }
+                },
+                rotate: { 
+                    value: { min: 0, max: 360 },
+                    direction: "random",
+                    move: true,
+                    animation: { 
+                        enable: true, 
+                        speed: 60 
+                    } 
+                },
+                tilt: { 
+                    direction: "random",
+                    enable: true,
+                    move: true,
+                    value: { min: 0, max: 360 },
+                    animation: { 
+                        enable: true, 
+                        speed: 60 
+                    } 
+                },
+                roll: { 
+                    darken: { enable: true, value: 25 },
+                    enable: true,
+                    speed: { min: 15, max: 25 } 
+                },
+                wobble: { 
+                    distance: 30,
+                    enable: true,
+                    move: true,
+                    speed: { min: -15, max: 15 } 
+                }
+            },
+            emitters: [
+                // Left bottom corner shooting towards center-top
+                {
+                    life: { 
+                        count: 80, 
+                        duration: 0.1, 
+                        delay: 0 
+                    },
+                    rate: { 
+                        delay: 0.05, 
+                        quantity: 5 
+                    },
+                    size: { 
+                        width: 0, 
+                        height: 0 
+                    },
+                    position: { 
+                        x: 5, 
+                        y: 95 
+                    },
+                    direction: {
+                        value: 315, // Shoot towards top-right (center)
+                        spread: 30
+                    }
+                },
+                // Right bottom corner shooting towards center-top
+                {
+                    life: { 
+                        count: 80, 
+                        duration: 0.1, 
+                        delay: 0.1 
+                    },
+                    rate: { 
+                        delay: 0.05, 
+                        quantity: 5 
+                    },
+                    size: { 
+                        width: 0, 
+                        height: 0 
+                    },
+                    position: { 
+                        x: 95, 
+                        y: 95 
+                    },
+                    direction: {
+                        value: 225, // Shoot towards top-left (center)
+                        spread: 30
+                    }
+                },
+                // Center bottom for extra effect
+                {
+                    life: { 
+                        count: 60, 
+                        duration: 0.1, 
+                        delay: 0.2 
+                    },
+                    rate: { 
+                        delay: 0.03, 
+                        quantity: 8 
+                    },
+                    size: { 
+                        width: 10, 
+                        height: 0 
+                    },
+                    position: { 
+                        x: 50, 
+                        y: 100 
+                    },
+                    direction: {
+                        value: 270, // Shoot straight up
+                        spread: 45
+                    }
+                }
+            ]
+        };
+
+        // Load the confetti
         tsParticles.load({ 
             id: "tsparticles", 
-            options: { 
-                "fullScreen": { "zIndex": 999 }, 
-                "particles": { 
-                    "number": { "value": 0 }, 
-                    "color": { 
-                        "value": [ "#ffd700", "#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4" ] 
-                    }, 
-                    "shape": { 
-                        "type": [ "circle", "square", "triangle" ], 
-                        "options": {} 
-                    }, 
-                    "opacity": { 
-                        "value": { "min": 0, "max": 1 }, 
-                        "animation": { 
-                            "enable": true, 
-                            "speed": 2, 
-                            "startValue": "max", 
-                            "destroy": "min" 
-                        } 
-                    }, 
-                    "size": { 
-                        "value": { "min": 3, "max": 6 } 
-                    }, 
-                    "links": { "enable": false }, 
-                    "life": { 
-                        "duration": { "sync": true, "value": 5 }, 
-                        "count": 1 
-                    }, 
-                    "move": { 
-                        "enable": true, 
-                        "gravity": { "enable": true, "acceleration": 10 }, 
-                        "speed": { "min": 10, "max": 20 }, 
-                        "decay": 0.1, 
-                        "direction": "none", 
-                        "straight": false, 
-                        "outModes": { "default": "destroy", "top": "none" } 
-                    }, 
-                    "rotate": { 
-                        "value": { "min": 0, "max": 360 }, 
-                        "direction": "random", 
-                        "move": true, 
-                        "animation": { "enable": true, "speed": 60 } 
-                    }, 
-                    "tilt": { 
-                        "direction": "random", 
-                        "enable": true, 
-                        "move": true, 
-                        "value": { "min": 0, "max": 360 }, 
-                        "animation": { "enable": true, "speed": 60 } 
-                    }, 
-                    "roll": { 
-                        "darken": { "enable": true, "value": 25 }, 
-                        "enable": true, 
-                        "speed": { "min": 15, "max": 25 } 
-                    }, 
-                    "wobble": { 
-                        "distance": 30, 
-                        "enable": true, 
-                        "move": true, 
-                        "speed": { "min": -15, "max": 15 } 
-                    } 
-                }, 
-                "emitters": [
-                    {
-                        "life": { "count": 50, "duration": 0.1, "delay": 0 },
-                        "rate": { "delay": 0.1, "quantity": 100 },
-                        "size": { "width": 0, "height": 0 },
-                        "position": { "x": 10, "y": 100 }
-                    },
-                    {
-                        "life": { "count": 50, "duration": 0.1, "delay": 0.2 },
-                        "rate": { "delay": 0.1, "quantity": 100 },
-                        "size": { "width": 0, "height": 0 },
-                        "position": { "x": 90, "y": 100 }
-                    }
-                ]
-            } 
+            options: confettiOptions
+        }).then(() => {
+            console.log('Confetti started!');
+        }).catch(error => {
+            console.error('Error loading confetti:', error);
         });
 
-        // Clear particles after 4 seconds
+        // Clear particles after animation completes
         setTimeout(() => {
-            tsParticles.dom()[0]?.destroy();
-        }, 4000);
+            const container = tsParticles.domItem(0);
+            if (container) {
+                container.destroy();
+            }
+        }, 5000);
     }
 
     getCurrentPositions() {
