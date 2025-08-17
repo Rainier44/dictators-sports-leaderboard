@@ -3,6 +3,7 @@
     font-family: 'October Guard';
     src: url('./fonts/october-guard.woff2') format('woff2'),
          url('./fonts/october-guard.woff') format('woff'),
+         url('./fonts/october-guard.otf') format('opentype'),
          url('./fonts/october-guard.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
