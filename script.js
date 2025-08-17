@@ -120,7 +120,7 @@ class SportsLeaderboard {
             
             if (oldPos.oldIndex !== newIndex) {
                 // Calculate the distance to move
-                const rowHeight = 75; // approximate height + gap
+                const rowHeight = 115; // approximate height + gap
                 const moveDistance = (newIndex - oldPos.oldIndex) * rowHeight;
                 
                 // Start from old position
