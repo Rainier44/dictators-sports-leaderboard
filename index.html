@@ -3,41 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dictators Sports Day - Leaderboard</title>
+    <title>Sportsman van het Jaar - Leaderboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏆 DICTATORS SPORTS DAY 🏆</h1>
-            <h2>Sportsman of the Year Championship</h2>
+            <h1>🏆 SPORTSMAN VAN HET JAAR 🏆</h1>
+            <h2>Wie zal de eeuwige roem behalen en zijn rijk tot glorie leiden?</h2>
         </div>
 
         <div class="controls">
             <div class="add-player-section">
-                <input type="text" id="playerName" placeholder="Enter player name" maxlength="20">
-                <button onclick="addPlayer()" class="btn btn-add">Add Player</button>
+                <input type="text" id="playerName" placeholder="Voer naam in" maxlength="20">
+                <input type="file" id="playerPhoto" accept="image/*" class="photo-input">
+                <button onclick="addPlayer()" class="btn btn-add">Voeg Speler Toe</button>
             </div>
             
             <div class="scoring-section">
                 <select id="playerSelect">
-                    <option value="">Select Player</option>
+                    <option value="">Selecteer Speler</option>
                 </select>
                 <input type="number" id="scoreInput" placeholder="Score" min="0" max="100">
-                <button onclick="addScore()" class="btn btn-score">Add Score</button>
+                <button onclick="addScore()" class="btn btn-score">Voeg Score Toe</button>
             </div>
 
             <div class="round-info">
-                <span>Round: <span id="currentRound">1</span></span>
-                <button onclick="nextRound()" class="btn btn-round">Next Round</button>
-                <button onclick="resetRound()" class="btn btn-reset-round">Reset Round</button>
-                <button onclick="resetAll()" class="btn btn-reset">Reset All</button>
+                <span>Ronde: <span id="currentRound">1</span></span>
+                <button onclick="nextRound()" class="btn btn-round">Volgende Ronde</button>
+                <button onclick="resetRound()" class="btn btn-reset-round">Reset Ronde</button>
+                <button onclick="resetAll()" class="btn btn-reset">Reset Alles</button>
             </div>
         </div>
 
         <div class="leaderboard">
             <div class="leaderboard-header">
-                <h3>Current Standings</h3>
+                <h3>Huidige Stand</h3>
             </div>
             <div id="leaderboardList" class="leaderboard-list">
                 <!-- Players will be dynamically added here -->
@@ -46,6 +47,7 @@
 
         <div class="animation-overlay" id="animationOverlay">
             <div class="score-animation" id="scoreAnimation">
+                <div class="player-photo-big" id="animationPlayerPhoto"></div>
                 <div class="player-name-big" id="animationPlayerName"></div>
                 <div class="score-display" id="animationScore"></div>
                 <div class="rank-display" id="animationRank"></div>
