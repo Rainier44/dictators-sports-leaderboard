@@ -6,14 +6,14 @@ class SportsLeaderboard {
         this.updateDisplay();
     }
 
-    addPlayer(name) {
+    addPlayer(name, photoFile = null) {
         if (!name.trim()) {
-            alert('Please enter a player name!');
+            alert('Voer een speler naam in!');
             return;
         }
         
         if (this.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
-            alert('Player already exists!');
+            alert('Speler bestaat al!');
             return;
         }
 
@@ -21,32 +21,46 @@ class SportsLeaderboard {
             id: Date.now(),
             name: name.trim(),
             totalScore: 0,
-            roundScores: []
+            roundScores: [],
+            photo: null
         };
 
-        this.players.push(player);
-        this.updateDisplay();
-        this.saveData();
+        // Handle photo if provided
+        if (photoFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                player.photo = e.target.result;
+                this.players.push(player);
+                this.updateDisplay();
+                this.saveData();
+            };
+            reader.readAsDataURL(photoFile);
+        } else {
+            this.players.push(player);
+            this.updateDisplay();
+            this.saveData();
+        }
         
-        // Clear input
+        // Clear inputs
         document.getElementById('playerName').value = '';
+        document.getElementById('playerPhoto').value = '';
     }
 
     addScore(playerId, score) {
         const player = this.players.find(p => p.id == playerId);
         if (!player) {
-            alert('Please select a player!');
+            alert('Selecteer een speler!');
             return;
         }
 
         if (score === '' || score < 0) {
-            alert('Please enter a valid score!');
+            alert('Voer een geldige score in!');
             return;
         }
 
         // Check if player already has a score for this round
         if (player.roundScores[this.currentRound - 1] !== undefined) {
-            alert(`${player.name} already has a score for Round ${this.currentRound}!`);
+            alert(`${player.name} heeft al een score voor Ronde ${this.currentRound}!`);
             return;
         }
 
@@ -55,7 +69,7 @@ class SportsLeaderboard {
         player.totalScore += parseInt(score);
 
         // Show animation
-        this.showScoreAnimation(player.name, score);
+        this.showScoreAnimation(player.name, score, player.photo);
 
         this.updateDisplay();
         this.saveData();
@@ -65,15 +79,23 @@ class SportsLeaderboard {
         document.getElementById('scoreInput').value = '';
     }
 
-    showScoreAnimation(playerName, score) {
+    showScoreAnimation(playerName, score, playerPhoto) {
         const overlay = document.getElementById('animationOverlay');
         const animation = document.getElementById('scoreAnimation');
+        const photoElement = document.getElementById('animationPlayerPhoto');
         const nameElement = document.getElementById('animationPlayerName');
         const scoreElement = document.getElementById('animationScore');
         const rankElement = document.getElementById('animationRank');
 
+        // Set photo
+        if (playerPhoto) {
+            photoElement.innerHTML = `<img src="${playerPhoto}" alt="${playerName}" class="player-photo-big">`;
+        } else {
+            photoElement.innerHTML = `<div class="player-photo-big default">👑</div>`;
+        }
+
         nameElement.textContent = playerName;
-        scoreElement.textContent = `+${score} points`;
+        scoreElement.textContent = `+${score} punten`;
         
         // Calculate new rank
         const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
@@ -93,14 +115,14 @@ class SportsLeaderboard {
             setTimeout(() => {
                 overlay.style.display = 'none';
             }, 500);
-        }, 2500);
+        }, 3000);
     }
 
     getRankText(rank) {
-        if (rank === 1) return '👑 LEADER! 👑';
-        if (rank === 2) return '🥈 2nd Place';
-        if (rank === 3) return '🥉 3rd Place';
-        return `${rank}th Place`;
+        if (rank === 1) return '👑 HEERSER! 👑';
+        if (rank === 2) return '🥈 2de Plaats';
+        if (rank === 3) return '🥉 3de Plaats';
+        return `${rank}de Plaats`;
     }
 
     updateDisplay() {
@@ -125,10 +147,16 @@ class SportsLeaderboard {
             // Show all round scores
             const roundScoresDisplay = player.roundScores.map((score, idx) => 
                 `R${idx + 1}: ${score !== undefined ? score : '-'}`
-            ).join(', ') || 'No scores yet';
+            ).join(', ') || 'Nog geen scores';
+            
+            // Create photo element
+            const photoHtml = player.photo 
+                ? `<img src="${player.photo}" alt="${player.name}" class="player-photo">`
+                : `<div class="player-photo default">👑</div>`;
             
             playerRow.innerHTML = `
                 <div class="rank-number">${rank}</div>
+                ${photoHtml}
                 <div class="player-info">
                     <div class="player-name">${player.name}</div>
                     <div class="player-score">${roundScoresDisplay}</div>
@@ -140,13 +168,13 @@ class SportsLeaderboard {
         });
         
         if (this.players.length === 0) {
-            leaderboardList.innerHTML = '<div class="player-row"><div class="player-info"><div class="player-name">No players yet</div><div class="player-score">Add players to get started!</div></div></div>';
+            leaderboardList.innerHTML = '<div class="player-row"><div class="player-info"><div class="player-name">Nog geen spelers</div><div class="player-score">Voeg spelers toe om te beginnen!</div></div></div>';
         }
     }
 
     updatePlayerSelect() {
         const select = document.getElementById('playerSelect');
-        select.innerHTML = '<option value="">Select Player</option>';
+        select.innerHTML = '<option value="">Selecteer Speler</option>';
         
         this.players.forEach(player => {
             const option = document.createElement('option');
@@ -176,11 +204,11 @@ class SportsLeaderboard {
 
     resetRound() {
         if (this.currentRound === 1) {
-            alert('Cannot reset Round 1!');
+            alert('Kan Ronde 1 niet resetten!');
             return;
         }
 
-        if (confirm(`Are you sure you want to reset Round ${this.currentRound}? This will remove all scores from this round.`)) {
+        if (confirm(`Weet je zeker dat je Ronde ${this.currentRound} wilt resetten? Dit verwijdert alle scores van deze ronde.`)) {
             this.players.forEach(player => {
                 // Remove the score from current round if it exists
                 if (player.roundScores[this.currentRound - 1] !== undefined) {
@@ -195,7 +223,7 @@ class SportsLeaderboard {
     }
 
     resetAll() {
-        if (confirm('Are you sure you want to reset everything? This cannot be undone!')) {
+        if (confirm('Weet je zeker dat je alles wilt resetten? Dit kan niet ongedaan worden gemaakt!')) {
             this.players = [];
             this.currentRound = 1;
             this.updateDisplay();
@@ -227,7 +255,10 @@ const leaderboard = new SportsLeaderboard();
 // Global functions for HTML buttons
 function addPlayer() {
     const name = document.getElementById('playerName').value;
-    leaderboard.addPlayer(name);
+    const photoInput = document.getElementById('playerPhoto');
+    const photoFile = photoInput.files[0];
+    
+    leaderboard.addPlayer(name, photoFile);
 }
 
 function addScore() {
