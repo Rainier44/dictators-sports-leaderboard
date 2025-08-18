@@ -71,15 +71,139 @@ class DisplayLeaderboard {
     performAnimation(trigger) {
         console.log('🎭 Starting animation sequence for:', trigger.playerName);
         
-        // First: show the score popup animation
-        this.showScorePopup(trigger);
+        // First: Show the leaderboard rank movement animation
+        this.animateLeaderboardMovement(trigger, () => {
+            // Then: show the score popup animation
+            this.showScorePopup(trigger);
+            
+            // Finally: show confetti if they became first
+            if (!trigger.wasFirst && trigger.isNowFirst) {
+                setTimeout(() => {
+                    console.log('🎊 Triggering confetti for new leader!');
+                    this.createConfetti();
+                }, 2000); // Show confetti 2 seconds after popup
+            }
+        });
+    }
+
+    animateLeaderboardMovement(trigger, callback) {
+        console.log('📊 Starting leaderboard rank animation for:', trigger.playerName);
         
-        // Then: show confetti if they became first
-        if (!trigger.wasFirst && trigger.isNowFirst) {
+        // Calculate the player's old and new positions
+        const playersBeforeScore = [...this.players];
+        const playerIndex = playersBeforeScore.findIndex(p => p.id === trigger.playerId);
+        
+        if (playerIndex === -1) {
+            console.log('❌ Player not found for rank animation');
+            callback();
+            return;
+        }
+
+        // Simulate the score change to calculate new position
+        const playersBefore = playersBeforeScore.map(p => ({
+            ...p,
+            totalScore: p.id === trigger.playerId ? p.totalScore - trigger.score : p.totalScore
+        }));
+        
+        const sortedBefore = [...playersBefore].sort((a, b) => b.totalScore - a.totalScore);
+        const sortedAfter = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        
+        const oldRank = sortedBefore.findIndex(p => p.id === trigger.playerId) + 1;
+        const newRank = sortedAfter.findIndex(p => p.id === trigger.playerId) + 1;
+        
+        console.log(`📈 Player ${trigger.playerName} moved from rank ${oldRank} to rank ${newRank}`);
+        
+        // Highlight and animate the player's row
+        const playerRow = document.querySelector(`[data-player-id="${trigger.playerId}"]`);
+        if (playerRow) {
+            // Add special highlighting class
+            playerRow.classList.add('player-updating');
+            
+            // Create a pill element that moves up/down
+            this.createMovingPill(trigger, oldRank, newRank, () => {
+                // Remove highlighting after pill animation
+                setTimeout(() => {
+                    playerRow.classList.remove('player-updating');
+                    callback();
+                }, 500);
+            });
+        } else {
+            console.log('❌ Player row not found in DOM');
+            callback();
+        }
+    }
+
+    createMovingPill(trigger, oldRank, newRank, callback) {
+        console.log(`🏃 Creating moving pill animation from rank ${oldRank} to ${newRank}`);
+        
+        // Only animate if there's actual movement
+        if (oldRank === newRank) {
+            console.log('📍 No rank change, skipping pill animation');
+            setTimeout(callback, 1000);
+            return;
+        }
+        
+        // Create a temporary pill element
+        const pill = document.createElement('div');
+        pill.className = 'moving-pill';
+        pill.innerHTML = `
+            <div class="pill-photo">
+                ${trigger.playerPhoto ? 
+                    `<img src="${trigger.playerPhoto}" alt="${trigger.playerName}" />` : 
+                    '👑'
+                }
+            </div>
+            <div class="pill-name">${trigger.playerName}</div>
+            <div class="pill-score">+${trigger.score}</div>
+        `;
+        
+        // Add pill to the leaderboard container
+        const leaderboard = document.getElementById('leaderboardList');
+        leaderboard.appendChild(pill);
+        
+        // Calculate start and end positions
+        const playerRows = Array.from(leaderboard.children).filter(el => 
+            el.classList.contains('player-row')
+        );
+        
+        const startIndex = Math.min(oldRank - 1, playerRows.length - 1);
+        const endIndex = Math.min(newRank - 1, playerRows.length - 1);
+        
+        const startRow = playerRows[startIndex];
+        const endRow = playerRows[endIndex];
+        
+        if (startRow && endRow) {
+            const startRect = startRow.getBoundingClientRect();
+            const endRect = endRow.getBoundingClientRect();
+            const leaderboardRect = leaderboard.getBoundingClientRect();
+            
+            // Position pill at start position
+            pill.style.position = 'absolute';
+            pill.style.left = '20px';
+            pill.style.top = (startRect.top - leaderboardRect.top) + 'px';
+            pill.style.zIndex = '999';
+            
+            // Force reflow
+            pill.offsetHeight;
+            
+            // Animate to end position
+            pill.style.transition = 'all 1.5s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            pill.style.transform = `translateY(${endRect.top - startRect.top}px)`;
+            
+            // Add glow effect during movement
             setTimeout(() => {
-                console.log('🎊 Triggering confetti for new leader!');
-                this.createConfetti();
-            }, 2000); // Show confetti 2 seconds after popup
+                pill.classList.add('pill-moving');
+            }, 100);
+            
+            // Remove pill after animation and call callback
+            setTimeout(() => {
+                pill.remove();
+                callback();
+            }, 1800);
+        } else {
+            console.log('❌ Could not find start or end row for pill animation');
+            pill.remove();
+            setTimeout(callback, 500);
         }
     }
 
