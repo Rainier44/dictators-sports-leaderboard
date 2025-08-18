@@ -7,36 +7,41 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body {
-            background: #f5f5f5;
+            background: #2c3e50;
             font-family: Arial, sans-serif;
+            color: #ecf0f1;
         }
         .admin-container {
             max-width: 800px;
             margin: 20px auto;
-            background: white;
+            background: #34495e;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .admin-header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 2px solid #4a6076;
         }
         .admin-header h1 {
-            color: #333;
+            color: #ecf0f1;
             margin: 0;
+        }
+        .admin-header p {
+            color: #bdc3c7;
+            margin: 5px 0 0 0;
         }
         .admin-section {
             margin-bottom: 25px;
             padding: 20px;
-            background: #f9f9f9;
+            background: #3c5166;
             border-radius: 8px;
         }
         .admin-section h3 {
             margin-top: 0;
-            color: #555;
+            color: #ecf0f1;
         }
         .form-row {
             display: flex;
@@ -48,13 +53,31 @@
         .form-row label {
             min-width: 100px;
             font-weight: bold;
+            color: #ecf0f1;
         }
         .form-row input, .form-row select {
             flex: 1;
             min-width: 150px;
             padding: 8px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #5a6d81;
             border-radius: 4px;
+            background: #2c3e50;
+            color: #ecf0f1;
+        }
+        .form-row input::placeholder {
+            color: #95a5a6;
+        }
+        .form-row input:focus, .form-row select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .form-row select option {
+            background: #2c3e50;
+            color: #ecf0f1;
+        }
+        .form-row select option:disabled {
+            color: #7f8c8d;
         }
         .btn {
             padding: 10px 20px;
@@ -71,8 +94,8 @@
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         
         .simple-leaderboard {
-            background: #fff;
-            border: 1px solid #ddd;
+            background: #2c3e50;
+            border: 1px solid #5a6d81;
             border-radius: 8px;
             max-height: 400px;
             overflow-y: auto;
@@ -81,7 +104,8 @@
             display: flex;
             align-items: center;
             padding: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #4a6076;
+            color: #ecf0f1;
         }
         .simple-player:last-child { border-bottom: none; }
         .simple-rank { 
@@ -99,12 +123,12 @@
             min-width: 60px;
             text-align: right;
         }
-        .rank-1 { background: #fff3cd; }
-        .rank-2 { background: #f8f9fa; }
-        .rank-3 { background: #f8f9fa; }
+        .rank-1 { background: rgba(241, 196, 15, 0.2); }
+        .rank-2 { background: rgba(149, 165, 166, 0.2); }
+        .rank-3 { background: rgba(230, 126, 34, 0.2); }
 
         .status-bar {
-            background: #2c3e50;
+            background: #1a252f;
             color: white;
             padding: 10px 20px;
             border-radius: 6px;
@@ -112,6 +136,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid #4a6076;
         }
     </style>
 </head>
@@ -145,7 +170,7 @@
                     <option value="">Selecteer Speler</option>
                 </select>
                 <label>Score:</label>
-                <input type="number" id="scoreInput" placeholder="Score" min="0" max="100">
+                <input type="number" id="scoreInput" placeholder="Score" min="0" max="100" step="0.1">
                 <button onclick="addScore()" class="btn btn-primary">Score Toevoegen</button>
             </div>
         </div>
