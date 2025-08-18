@@ -53,8 +53,10 @@ class SportsLeaderboard {
             return;
         }
 
-        if (score === '' || score < 0) {
-            alert('Voer een geldige score in!');
+        // Enhanced validation to prevent NaN scores
+        const scoreValue = parseFloat(score);
+        if (score === '' || score === null || score === undefined || isNaN(scoreValue) || scoreValue < 0) {
+            alert('Voer een geldige score in! (0 of hoger)');
             return;
         }
 
@@ -68,16 +70,16 @@ class SportsLeaderboard {
         const sortedBefore = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         const wasFirst = sortedBefore.length > 0 && sortedBefore[0].id == playerId;
 
-        // Add score to current round
-        player.roundScores[this.currentRound - 1] = parseInt(score);
-        player.totalScore += parseInt(score);
+        // Add score to current round - use scoreValue (parsed float) instead of parseInt
+        player.roundScores[this.currentRound - 1] = scoreValue;
+        player.totalScore += scoreValue;
 
         // Check if player is now first
         const sortedAfter = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
         const isNowFirst = sortedAfter[0].id == playerId;
 
         // Trigger animation on display page
-        this.triggerDisplayAnimation(player, parseInt(score), wasFirst, isNowFirst);
+        this.triggerDisplayAnimation(player, scoreValue, wasFirst, isNowFirst);
 
         // Update and save
         this.updateDisplay();
@@ -236,7 +238,7 @@ function addPlayer() {
 function addScore() {
     const playerId = document.getElementById('playerSelect').value;
     const score = document.getElementById('scoreInput').value;
-    leaderboard.addScore(playerId, parseInt(score));
+    leaderboard.addScore(playerId, score);
 }
 
 function nextRound() {
