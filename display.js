@@ -124,7 +124,7 @@ class DisplayLeaderboard {
     }
 
     createConfetti() {
-        console.log('🎊 Creating confetti display!');
+        console.log('🎊 createConfetti() called!');
         
         // Check if confetti library is loaded
         if (typeof confetti === 'undefined') {
@@ -132,65 +132,63 @@ class DisplayLeaderboard {
             return;
         }
 
+        console.log('✅ Canvas-confetti library is available');
+        console.log('🚀 Firing confetti from bottom corners to center!');
+
         // Fire confetti from left bottom corner towards center
         confetti({
-            particleCount: 100,
+            particleCount: 120,
             angle: 60,
-            spread: 70,
-            startVelocity: 60,
-            origin: { x: 0.1, y: 0.9 },
+            spread: 55,
+            origin: { x: 0.2, y: 1.0 },
             colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
         });
 
-        // Fire confetti from right bottom corner towards center
+        // Fire confetti from right bottom corner towards center (slight delay)
         setTimeout(() => {
             confetti({
-                particleCount: 100,
+                particleCount: 120,
                 angle: 120,
-                spread: 70,
-                startVelocity: 60,
-                origin: { x: 0.9, y: 0.9 },
+                spread: 55,
+                origin: { x: 0.8, y: 1.0 },
                 colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
             });
         }, 150);
 
-        // Fire confetti from center bottom straight up
+        // Fire confetti from center bottom straight up (more delay)
         setTimeout(() => {
             confetti({
-                particleCount: 80,
+                particleCount: 100,
                 angle: 90,
                 spread: 100,
-                startVelocity: 70,
                 origin: { x: 0.5, y: 1.0 },
                 colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
             });
         }, 300);
 
-        // Add top corners for extra spectacular effect
         setTimeout(() => {
             confetti({
-                particleCount: 70,
-                angle: 315,
+                particleCount: 120,
+                angle: 315,                // Shoots down-right (315° = -45°)
                 spread: 55,
-                startVelocity: 50,
-                origin: { x: 0.1, y: 0.1 },
-                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
+                origin: { x: 0.2, y: 0.0 }, // Top left (x: 10%, y: 10%)
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
             });
         }, 100);
 
         setTimeout(() => {
             confetti({
-                particleCount: 70,
-                angle: 225,
+                particleCount: 120,
+                angle: 225,                // Shoots down-left (225° = -135°)
                 spread: 55,
-                startVelocity: 50,
-                origin: { x: 0.9, y: 0.1 },
-                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
+                origin: { x: 0.8, y: 0.0 }, // Top right (x: 90%, y: 10%)
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
             });
-        }, 250);
+        }, 200);
 
-        console.log('✅ Full spectacular confetti display fired!');
+        console.log('✅ Canvas-confetti fired successfully!');
     }
+
 
     updateDisplay() {
         this.updateLeaderboard();
