@@ -6,13 +6,18 @@ class DisplayLeaderboard {
         this.lastRoundAnimationTimestamp = 0;
         this.isAnimating = false;
         this.isRoundAnimating = false;
+        this.gifIndex = 0; // Counter for iterating through GIFs
+
         
         // Available GIFs for round animations (you can add real GIFs here)
         this.availableGifs = [
-            './gifs/celebration1.gif',
-            './gifs/explosion.gif',
-            './gifs/fireworks.gif',
-            './gifs/epic.gif'
+            './gifs/running-fail.gif',
+            './gifs/paralympics1.gif',
+            './gifs/paralympics2.gif',
+            './gifs/paralympics3.gif',
+            './gifs/fail1.gif',
+            './gifs/fail3.gif',
+            './gifs/fail4.gif',
         ];
         
         this.loadData();
@@ -101,9 +106,10 @@ class DisplayLeaderboard {
         // Update internal round number
         this.currentRound = trigger.roundNumber;
 
-        // Select a random GIF
-        const randomGif = this.getRandomGif();
-        console.log('🎯 Selected GIF:', randomGif);
+        // Select a next GIF
+        const nextGif = this.getNextGif();
+
+        console.log('🎯 Selected GIF:', nextGif);
 
         // Get animation elements
         const overlay = document.getElementById('roundAnimationOverlay');
@@ -115,7 +121,7 @@ class DisplayLeaderboard {
         // Set content
         titleElement.textContent = 'NEXT ROUND';
         numberElement.textContent = trigger.roundNumber;
-        gifElement.src = randomGif;
+        gifElement.src = nextGif;
 
         // Show overlay
         overlay.style.display = 'flex';
@@ -144,18 +150,17 @@ class DisplayLeaderboard {
         }, 5000);
     }
 
-    getRandomGif() {
-        // For now, return a placeholder since we don't have real GIFs
-        // You can replace these with actual GIF URLs or use a fallback image
-        const placeholderGifs = [
-            'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif', // Celebration
-            'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif', // Fireworks
-            'https://media.giphy.com/media/3o7aCSPqXE5C6T8tBC/giphy.gif', // Epic
-            'https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif'  // Explosion
-        ];
+    getNextGif() {
+        // Get the current GIF
+        const selectedGif = this.availableGifs[this.gifIndex];
         
-        const randomIndex = Math.floor(Math.random() * placeholderGifs.length);
-        return placeholderGifs[randomIndex];
+        // Move to next GIF for next time
+        this.gifIndex = (this.gifIndex + 1) % this.availableGifs.length;
+        
+        console.log('🎯 Selected GIF (iterative):', selectedGif);
+        console.log('🔢 Next GIF index will be:', this.gifIndex);
+        
+        return selectedGif;
     }
 
     checkForAnimationTrigger() {
