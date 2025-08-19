@@ -418,9 +418,11 @@ class DisplayLeaderboard {
 
         // Set photo and name
         if (player.photo) {
-            photoElement.innerHTML = `<img src="${player.photo}" alt="${player.name}" class="player-photo-big">`;
+            photoElement.className = 'player-photo-popup-container'; // Change the container class
+            photoElement.innerHTML = `<img src="${player.photo}" alt="${player.name}" class="player-photo-popup">`;
         } else {
-            photoElement.innerHTML = `<div class="player-photo-big default">👑</div>`;
+            photoElement.className = 'player-photo-popup-container';
+            photoElement.innerHTML = `<div class="player-photo-popup default">👑</div>`;
         }
 
         nameElement.textContent = player.name;
