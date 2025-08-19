@@ -107,6 +107,18 @@ class SportsLeaderboard {
         console.log('🎬 Animation triggered for display page:', player.name, '+' + score);
     }
 
+    triggerRoundAnimation(newRound) {
+        // Store round animation trigger in localStorage for display page
+        const roundAnimationData = {
+            type: 'nextRound',
+            roundNumber: newRound,
+            timestamp: Date.now()
+        };
+        
+        localStorage.setItem('roundAnimationTrigger', JSON.stringify(roundAnimationData));
+        console.log('🎬 Round animation triggered for display page: Round', newRound);
+    }
+
     updateDisplay() {
         this.updateSimpleLeaderboard();
         this.updatePlayerSelect();
@@ -170,6 +182,10 @@ class SportsLeaderboard {
 
     nextRound() {
         this.currentRound++;
+        
+        // Trigger the round animation on display page
+        this.triggerRoundAnimation(this.currentRound);
+        
         this.updateDisplay();
         this.saveData();
     }
@@ -202,6 +218,7 @@ class SportsLeaderboard {
             this.saveData();
             // Clear animation triggers
             localStorage.removeItem('animationTrigger');
+            localStorage.removeItem('roundAnimationTrigger');
         }
     }
 
@@ -263,6 +280,12 @@ function testAnimation() {
     } else {
         alert('Voeg eerst een speler toe om de animatie te testen.');
     }
+}
+
+// Test round animation function
+function testRoundAnimation() {
+    leaderboard.triggerRoundAnimation(leaderboard.currentRound + 1);
+    alert('Test ronde animatie verstuurd naar display pagina!');
 }
 
 // Keyboard shortcuts
