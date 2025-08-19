@@ -210,16 +210,46 @@ class SportsLeaderboard {
         }
     }
 
-    resetAll() {
-        if (confirm('Weet je zeker dat je alles wilt resetten? Dit kan niet ongedaan worden gemaakt!')) {
+    resetAllScores() {
+        if (confirm('Weet je zeker dat je alle scores wilt resetten? Dit zet alle scores op 0 en gaat terug naar Ronde 1, maar houdt de spelers.')) {
+            // Reset all player scores but keep the players
+            this.players.forEach(player => {
+                player.totalScore = 0;
+                player.roundScores = [];
+            });
+            
+            // Reset to round 1
+            this.currentRound = 1;
+            
+            this.updateDisplay();
+            this.saveData();
+            
+            // Clear animation triggers
+            localStorage.removeItem('animationTrigger');
+            localStorage.removeItem('roundAnimationTrigger');
+            
+            alert('Alle scores zijn gereset! Spelers blijven behouden.');
+        }
+    }
+
+    removeAllPlayers() {
+        if (confirm('Weet je zeker dat je alle spelers wilt verwijderen? Dit verwijdert alle spelers en reset de competitie volledig. Dit kan niet ongedaan worden gemaakt!')) {
             this.players = [];
             this.currentRound = 1;
             this.updateDisplay();
             this.saveData();
+            
             // Clear animation triggers
             localStorage.removeItem('animationTrigger');
             localStorage.removeItem('roundAnimationTrigger');
+            
+            alert('Alle spelers zijn verwijderd en de competitie is volledig gereset!');
         }
+    }
+
+    // Legacy function - keeping for backward compatibility but redirecting to removeAllPlayers
+    resetAll() {
+        this.removeAllPlayers();
     }
 
     saveData() {
@@ -266,6 +296,15 @@ function resetRound() {
     leaderboard.resetRound();
 }
 
+function resetAllScores() {
+    leaderboard.resetAllScores();
+}
+
+function removeAllPlayers() {
+    leaderboard.removeAllPlayers();
+}
+
+// Legacy function - keeping for backward compatibility
 function resetAll() {
     leaderboard.resetAll();
 }
