@@ -180,9 +180,20 @@
             <div class="form-row">
                 <button onclick="nextRound()" class="btn btn-warning">Volgende Ronde</button>
                 <button onclick="resetRound()" class="btn btn-danger">Reset Huidige Ronde</button>
-                <button onclick="resetAll()" class="btn btn-danger">Reset Alles</button>
                 <button onclick="testAnimation()" class="btn" style="background: #9b59b6; color: white;">Test Animatie</button>
             </div>
+        </div>
+
+        <div class="admin-section">
+            <h3>⚠️ Reset Opties</h3>
+            <div class="form-row">
+                <button onclick="resetAllScores()" class="btn btn-danger">Reset Alle Scores</button>
+                <button onclick="removeAllPlayers()" class="btn btn-danger">Verwijder Alle Spelers</button>
+            </div>
+            <p style="color: #95a5a6; font-size: 0.9em; margin-top: 10px;">
+                <strong>Reset Alle Scores:</strong> Zet alle scores op 0 en gaat terug naar Ronde 1, maar houdt spelers.<br>
+                <strong>Verwijder Alle Spelers:</strong> Verwijdert alle spelers en reset de competitie volledig.
+            </p>
         </div>
 
         <div class="admin-section">
