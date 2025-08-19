@@ -3,7 +3,18 @@ class DisplayLeaderboard {
         this.players = [];
         this.currentRound = 1;
         this.lastAnimationTimestamp = 0;
+        this.lastRoundAnimationTimestamp = 0;
         this.isAnimating = false;
+        this.isRoundAnimating = false;
+        
+        // Available GIFs for round animations (you can add real GIFs here)
+        this.availableGifs = [
+            './gifs/celebration1.gif',
+            './gifs/explosion.gif',
+            './gifs/fireworks.gif',
+            './gifs/epic.gif'
+        ];
+        
         this.loadData();
         this.updateDisplay();
         this.startWatching();
@@ -27,6 +38,7 @@ class DisplayLeaderboard {
         // Watch for animation triggers every 100ms
         setInterval(() => {
             this.checkForAnimationTrigger();
+            this.checkForRoundAnimationTrigger();
         }, 100);
     }
 
@@ -49,7 +61,7 @@ class DisplayLeaderboard {
             const hasChanged = JSON.stringify(this.players) !== JSON.stringify(data.players) ||
                             this.currentRound !== data.currentRound;
 
-            if (hasChanged && !this.isAnimating) {
+            if (hasChanged && !this.isAnimating && !this.isRoundAnimating) {
                 console.log('📊 Data changed, updating display (no animation)');
                 this.players = data.players || [];
                 this.currentRound = data.currentRound || 1;
@@ -58,9 +70,97 @@ class DisplayLeaderboard {
         }
     }
 
+    checkForRoundAnimationTrigger() {
+        const triggerData = localStorage.getItem('roundAnimationTrigger');
+        if (triggerData && !this.isRoundAnimating && !this.isAnimating) {
+            try {
+                const trigger = JSON.parse(triggerData);
+                
+                // Only process if this is a new trigger
+                if (trigger.timestamp > this.lastRoundAnimationTimestamp) {
+                    this.lastRoundAnimationTimestamp = trigger.timestamp;
+                    console.log('🎬 Round animation trigger received:', trigger);
+                    
+                    // Perform the round animation
+                    this.performRoundAnimation(trigger);
+                    
+                    // Clear the trigger
+                    localStorage.removeItem('roundAnimationTrigger');
+                }
+            } catch (e) {
+                console.error('❌ Error parsing round animation trigger:', e);
+                localStorage.removeItem('roundAnimationTrigger');
+            }
+        }
+    }
+
+    performRoundAnimation(trigger) {
+        console.log('🎬 Starting round animation for round:', trigger.roundNumber);
+        this.isRoundAnimating = true;
+
+        // Update internal round number
+        this.currentRound = trigger.roundNumber;
+
+        // Select a random GIF
+        const randomGif = this.getRandomGif();
+        console.log('🎯 Selected GIF:', randomGif);
+
+        // Get animation elements
+        const overlay = document.getElementById('roundAnimationOverlay');
+        const animation = document.getElementById('roundAnimation');
+        const titleElement = document.getElementById('roundTitle');
+        const numberElement = document.getElementById('roundNumber');
+        const gifElement = document.getElementById('roundGif');
+
+        // Set content
+        titleElement.textContent = 'NEXT ROUND';
+        numberElement.textContent = trigger.roundNumber;
+        gifElement.src = randomGif;
+
+        // Show overlay
+        overlay.style.display = 'flex';
+
+        // Start animation after brief delay
+        setTimeout(() => {
+            animation.classList.add('show');
+        }, 100);
+
+        // Trigger confetti
+        setTimeout(() => {
+            this.createConfetti();
+        }, 800);
+
+        // Hide animation after 5 seconds
+        setTimeout(() => {
+            animation.classList.remove('show');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                this.isRoundAnimating = false;
+                
+                // Update display with new round number
+                this.updateDisplay();
+                console.log('✅ Round animation completed');
+            }, 600);
+        }, 5000);
+    }
+
+    getRandomGif() {
+        // For now, return a placeholder since we don't have real GIFs
+        // You can replace these with actual GIF URLs or use a fallback image
+        const placeholderGifs = [
+            'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif', // Celebration
+            'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif', // Fireworks
+            'https://media.giphy.com/media/3o7aCSPqXE5C6T8tBC/giphy.gif', // Epic
+            'https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif'  // Explosion
+        ];
+        
+        const randomIndex = Math.floor(Math.random() * placeholderGifs.length);
+        return placeholderGifs[randomIndex];
+    }
+
     checkForAnimationTrigger() {
         const triggerData = localStorage.getItem('animationTrigger');
-        if (triggerData && !this.isAnimating) {
+        if (triggerData && !this.isAnimating && !this.isRoundAnimating) {
             try {
                 const trigger = JSON.parse(triggerData);
                 
@@ -84,7 +184,7 @@ class DisplayLeaderboard {
 
     performFLIPAnimation(trigger) {
         try {
-            if (this.isAnimating) {
+            if (this.isAnimating || this.isRoundAnimating) {
                 console.log('⚠️ Animation already in progress, skipping...');
                 return;
             }
@@ -581,7 +681,7 @@ class DisplayLeaderboard {
     }
 
     updateDisplay() {
-        if (!this.isAnimating) {
+        if (!this.isAnimating && !this.isRoundAnimating) {
             this.updateLeaderboard();
         }
         document.getElementById('currentRound').textContent = this.currentRound;
@@ -625,5 +725,16 @@ function testFLIPAnimation() {
     displayLeaderboard.performFLIPAnimation(fakeTrigger);
 }
 
+function testRoundAnimation() {
+    console.log('🧪 Testing round animation...');
+    const fakeRoundTrigger = {
+        type: 'nextRound',
+        roundNumber: displayLeaderboard.currentRound + 1,
+        timestamp: Date.now()
+    };
+    console.log('🎬 Triggering fake round animation with:', fakeRoundTrigger);
+    displayLeaderboard.performRoundAnimation(fakeRoundTrigger);
+}
+
 console.log('📺 Display page loaded - Enhanced debugging enabled!');
-console.log('🔧 Test functions: testConfetti(), testFLIPAnimation()');
+console.log('🔧 Test functions: testConfetti(), testFLIPAnimation(), testRoundAnimation()');
