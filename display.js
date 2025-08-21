@@ -21,40 +21,9 @@ class DisplayLeaderboard {
             './gifs/fail4.gif',
         ];
         
-        console.log('🎬 GIF rotation initialized with index:', this.gifIndex);
-        
         this.loadData();
         this.updateDisplay();
         this.startWatching();
-        this.logPlayerCount();
-    }
-
-    logPlayerCount() {
-        console.log('🔍 DEBUGGING PLAYER COUNT:');
-        console.log('📊 Total players loaded:', this.players.length);
-        console.log('📋 Player names:', this.players.map(p => p.name));
-        
-        const rawData = localStorage.getItem('sportsLeaderboard');
-        if (rawData) {
-            try {
-                const parsed = JSON.parse(rawData);
-                console.log('📦 Raw localStorage data players count:', parsed.players ? parsed.players.length : 0);
-                console.log('📦 Raw localStorage player names:', parsed.players ? parsed.players.map(p => p.name) : []);
-            } catch (e) {
-                console.error('❌ Error parsing localStorage:', e);
-            }
-        } else {
-            console.log('📦 No localStorage data found');
-        }
-        
-        setTimeout(() => {
-            const leaderboardList = document.getElementById('leaderboardList');
-            if (leaderboardList) {
-                const domElements = leaderboardList.children.length;
-                console.log('🏠 DOM elements in leaderboard:', domElements);
-                console.log('🏠 DOM element player IDs:', Array.from(leaderboardList.children).map(el => el.getAttribute('data-player-id')));
-            }
-        }, 1000);
     }
 
     loadData() {
@@ -63,12 +32,6 @@ class DisplayLeaderboard {
             const data = JSON.parse(saved);
             this.players = data.players || [];
             this.currentRound = data.currentRound || 1;
-            
-            console.log('📥 Data loaded from localStorage:');
-            console.log('📊 Players count:', this.players.length);
-            console.log('📋 Current round:', this.currentRound);
-        } else {
-            console.log('📥 No saved data found in localStorage');
         }
     }
 
@@ -92,11 +55,10 @@ class DisplayLeaderboard {
             try {
                 const trigger = JSON.parse(animationTrigger);
                 if (trigger.timestamp > this.lastAnimationTimestamp) {
-                    console.log('⏳ Animation trigger pending - BLOCKING regular update to preserve DOM state');
+                    console.log('⏳ Animation pending - blocking regular update');
                     return; // Don't update until animation is processed
                 }
             } catch (_) {
-                // If there's a parsing error, remove the bad trigger
                 localStorage.removeItem('animationTrigger');
             }
         }
@@ -107,7 +69,7 @@ class DisplayLeaderboard {
             try {
                 const trigger = JSON.parse(roundTrigger);
                 if (trigger.timestamp > this.lastRoundAnimationTimestamp) {
-                    console.log('⏳ Round animation trigger pending - BLOCKING regular update');
+                    console.log('⏳ Round animation pending - blocking regular update');
                     return; // Don't update until round animation is processed
                 }
             } catch (_) {
@@ -122,12 +84,9 @@ class DisplayLeaderboard {
                             this.currentRound !== data.currentRound;
 
             if (hasChanged && !this.isAnimating && !this.isRoundAnimating) {
-                console.log('📊 Data changed, updating display (no animation)');
-                console.log('📊 New player count:', data.players ? data.players.length : 0);
                 this.players = data.players || [];
                 this.currentRound = data.currentRound || 1;
                 this.updateDisplay();
-                this.logPlayerCount();
             }
         }
     }
@@ -140,7 +99,7 @@ class DisplayLeaderboard {
                 
                 if (trigger.timestamp > this.lastRoundAnimationTimestamp) {
                     this.lastRoundAnimationTimestamp = trigger.timestamp;
-                    console.log('🎬 Round animation trigger received:', trigger);
+                    console.log('🎬 Round animation trigger received');
                     
                     this.performRoundAnimation(trigger);
                     localStorage.removeItem('roundAnimationTrigger');
@@ -158,7 +117,6 @@ class DisplayLeaderboard {
         this.currentRound = trigger.roundNumber;
 
         const nextGif = this.getNextGif();
-        console.log('🎯 Selected GIF:', nextGif);
 
         const overlay = document.getElementById('roundAnimationOverlay');
         const animation = document.getElementById('roundAnimation');
@@ -210,9 +168,7 @@ class DisplayLeaderboard {
             }
         } while (attempts < this.availableGifs.length);
         
-        console.log('🎯 Current GIF index:', this.gifIndex);
         console.log('🎯 Selected GIF:', selectedGif);
-        console.log('🎯 Last used GIF was:', lastGif);
         
         // Move to next index for next time
         this.gifIndex = (this.gifIndex + 1) % this.availableGifs.length;
@@ -220,9 +176,6 @@ class DisplayLeaderboard {
         // Save both the new index and the selected GIF
         localStorage.setItem('currentGifIndex', this.gifIndex.toString());
         localStorage.setItem('lastUsedGif', selectedGif);
-        
-        console.log('🔢 Next GIF index will be:', this.gifIndex);
-        console.log('💾 Saved to localStorage - index:', this.gifIndex, 'lastGif:', selectedGif);
         
         return selectedGif;
     }
@@ -235,7 +188,7 @@ class DisplayLeaderboard {
                 
                 if (trigger.timestamp > this.lastAnimationTimestamp) {
                     this.lastAnimationTimestamp = trigger.timestamp;
-                    console.log('🎬 Animation trigger received:', trigger);
+                    console.log('🎬 Animation trigger received for:', trigger.playerName);
                     
                     this.performFLIPAnimation(trigger);
                     localStorage.removeItem('animationTrigger');
@@ -254,15 +207,10 @@ class DisplayLeaderboard {
                 return;
             }
             
-            console.log('🎭 Starting FLIP animation for:', trigger.playerName);
+            console.log('🎭 Starting ocean split animation for:', trigger.playerName);
             this.isAnimating = true;
             
-            // Step 1: Store the current DOM state as the "old" state before any changes
-            console.log('📏 FLIP Step 1: Recording OLD positions (current DOM state)...');
-            const oldPositions = this.recordPositions();
-            console.log('✅ Recorded', oldPositions.size, 'old positions');
-            
-            // Step 2: Get the new data from localStorage
+            // Step 1: Get fresh data from localStorage
             const currentData = JSON.parse(localStorage.getItem('sportsLeaderboard'));
             if (!currentData || !currentData.players) {
                 console.error('❌ No data found in localStorage');
@@ -270,82 +218,176 @@ class DisplayLeaderboard {
                 return;
             }
 
-            // Step 3: Update our internal data to match localStorage
+            // Step 2: Update our internal data to match localStorage
             this.players = currentData.players;
             
-            // Step 4: Calculate new ranking
-            const newRanking = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-            console.log('📊 NEW ranking:', newRanking.map((p, i) => `${i+1}. ${p.name}: ${p.totalScore}`));
-            
-            // Step 5: Find the scoring player's new position
+            // Step 3: Find the scoring player in the NEW data
             const scoringPlayer = this.players.find(p => p.id == trigger.playerId);
-            const newPosition = newRanking.findIndex(p => p.id == trigger.playerId);
-            
-            console.log(`🎯 Player ${scoringPlayer.name} will be at position ${newPosition + 1}`);
-            
-            // Step 6: Update DOM to show new ranking without animation
-            this.updateLeaderboardDOM(newRanking);
-            
-            // Force layout recalculation
-            const leaderboardList = document.getElementById('leaderboardList');
-            leaderboardList.offsetHeight;
-            console.log('🔄 Forced layout recalculation');
-
-            // Step 7: Record NEW positions (after DOM update)
-            console.log('📏 FLIP Step 2: Recording NEW positions...');
-            const newPositions = this.recordPositions();
-            console.log('✅ Recorded', newPositions.size, 'new positions');
-            
-            // Step 8: Calculate animations needed
-            console.log('🧮 FLIP Step 3: Calculating animations...');
-            const animations = this.calculateAnimationsImproved(oldPositions, newPositions, trigger.playerId);
-            
-            if (animations.length === 0) {
-                console.log('⚠️ No animations calculated - falling back to simple highlight');
-                this.highlightPlayerAndShowPopup(scoringPlayer, trigger.score, newPosition + 1);
+            if (!scoringPlayer) {
+                console.error('❌ Could not find scoring player in new data');
+                this.isAnimating = false;
                 return;
             }
             
-            // Step 9: Play the animations
-            console.log('🎬 FLIP Step 4: Playing animations...');
-            this.playAnimations(animations, trigger, newPosition + 1);
+            // Step 4: Calculate new ranking based on NEW data
+            const newRanking = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+            
+            // Step 5: Find the scoring player's NEW position in the ranking
+            const newPosition = newRanking.findIndex(p => p.id == trigger.playerId);
+            const actualRank = newPosition + 1;
+            
+            console.log(`🎯 Player ${scoringPlayer.name} new rank: ${actualRank} (score: ${scoringPlayer.totalScore})`);
+            
+            // Step 6: Calculate target position WITHOUT changing DOM yet
+            const targetPosition = this.calculateTargetPositionInCurrentDOM(trigger.playerId, actualRank);
+            
+            if (!targetPosition) {
+                console.log('⚠️ Could not calculate target position - falling back to highlight');
+                this.highlightPlayerAndShowPopup(scoringPlayer, trigger.score, actualRank);
+                return;
+            }
+            
+            // Step 7: Perform the ocean split animation
+            this.performOceanSplitAnimation(trigger, scoringPlayer, targetPosition, actualRank, newRanking);
             
         } catch (error) {
             console.error('❌ Error in performFLIPAnimation:', error);
             this.isAnimating = false;
+            // Fallback with fresh calculation
             setTimeout(() => {
-                const player = this.players.find(p => p.id == trigger.playerId);
-                const newRanking = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-                const newPosition = newRanking.findIndex(p => p.id == trigger.playerId) + 1;
-                this.showScorePopup(player, trigger.score, newPosition);
+                const freshData = JSON.parse(localStorage.getItem('sportsLeaderboard'));
+                const freshRanking = [...freshData.players].sort((a, b) => b.totalScore - a.totalScore);
+                const freshPosition = freshRanking.findIndex(p => p.id == trigger.playerId) + 1;
+                const player = freshData.players.find(p => p.id == trigger.playerId);
+                this.showScorePopup(player, trigger.score, freshPosition);
             }, 200);
         }
     }
 
+    calculateTargetPositionInCurrentDOM(playerId, newRank) {
+        const leaderboardList = document.getElementById('leaderboardList');
+        const allElements = Array.from(leaderboardList.children);
+        const scoringElement = leaderboardList.querySelector(`[data-player-id="${playerId}"]`);
+        
+        if (!scoringElement) {
+            console.error('❌ Could not find scoring element');
+            return null;
+        }
+        
+        const currentRect = scoringElement.getBoundingClientRect();
+        
+        // Find where to position the player (between the elements at newRank-1 and newRank)
+        let targetY;
+        
+        if (newRank === 1) {
+            // Moving to first position - go above the current first element
+            const firstElement = allElements[0];
+            const firstRect = firstElement.getBoundingClientRect();
+            targetY = firstRect.top;
+        } else if (newRank > allElements.length) {
+            // Moving to last position - go below the current last element
+            const lastElement = allElements[allElements.length - 1];
+            const lastRect = lastElement.getBoundingClientRect();
+            targetY = lastRect.bottom;
+        } else {
+            // Moving to middle position - go between the elements
+            const beforeElement = allElements[newRank - 2]; // Element that will be above
+            const afterElement = allElements[newRank - 1];  // Element that will be below
+            
+            const beforeRect = beforeElement.getBoundingClientRect();
+            const afterRect = afterElement.getBoundingClientRect();
+            
+            // Position between them
+            targetY = beforeRect.bottom + ((afterRect.top - beforeRect.bottom) / 2);
+        }
+        
+        const deltaX = 0; // No horizontal movement
+        const deltaY = targetY - currentRect.top;
+        
+        console.log(`🎯 Target: rank ${newRank}, deltaY: ${Math.round(deltaY)}px`);
+        
+        return {
+            deltaX,
+            deltaY,
+            targetY
+        };
+    }
+
+    performOceanSplitAnimation(trigger, scoringPlayer, targetPosition, actualRank, finalRanking) {
+        const leaderboardList = document.getElementById('leaderboardList');
+        const scoringElement = leaderboardList.querySelector(`[data-player-id="${trigger.playerId}"]`);
+        
+        if (!scoringElement) {
+            console.error('❌ Could not find scoring player element');
+            this.isAnimating = false;
+            return;
+        }
+        
+        console.log('🌊 Phase 1: Player swims to target position');
+        
+        // Phase 1: Move the scoring player to their target position (no space yet)
+        scoringElement.style.transition = 'none';
+        scoringElement.style.transform = 'translate(0px, 0px)';
+        scoringElement.style.zIndex = '30'; // High z-index to go over others
+        scoringElement.classList.add('player-updating');
+        
+        // Force reflow
+        scoringElement.offsetHeight;
+        
+        // Start the movement to target position
+        scoringElement.style.transition = 'transform 2.0s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        scoringElement.style.transform = `translate(${targetPosition.deltaX}px, ${targetPosition.deltaY}px)`;
+        
+        // Phase 2: After player reaches position, split the ocean (make space)
+        setTimeout(() => {
+            console.log('🌊 Phase 2: Splitting the ocean');
+            
+            // Update DOM to final order while player is floating
+            this.updateLeaderboardDOM(finalRanking);
+            
+            // Reset player's transform since DOM is now correct
+            scoringElement.style.transition = 'transform 0.8s ease-out';
+            scoringElement.style.transform = 'translate(0px, 0px)';
+            
+        }, 1800);
+        
+        // Phase 3: Cleanup and show popup
+        setTimeout(() => {
+            console.log('🌊 Phase 3: Ocean split complete');
+            
+            scoringElement.style.transition = '';
+            scoringElement.style.transform = '';
+            scoringElement.style.zIndex = '';
+            scoringElement.classList.remove('player-updating');
+            
+            this.isAnimating = false;
+            console.log('✅ Ocean split animation completed');
+            
+            // Show popup
+            setTimeout(() => {
+                this.showScorePopup(scoringPlayer, trigger.score, actualRank);
+            }, 300);
+            
+        }, 3200);
+    }
+
     updateLeaderboardDOM(sortedPlayers) {
-        console.log('🔄 Updating DOM to show new ranking...');
         const leaderboardList = document.getElementById('leaderboardList');
 
         // Store current DOM order before reordering
         const currentOrder = Array.from(leaderboardList.children).map(el => el.getAttribute('data-player-id'));
-        console.log('📋 Current DOM order:', currentOrder);
         
         // Create the new order based on sorted players
         const newOrder = sortedPlayers.map(player => String(player.id));
-        console.log('📋 Target DOM order:', newOrder);
         
         // Check if reordering is actually needed
         const needsReordering = !currentOrder.every((id, index) => id === newOrder[index]);
         
         if (!needsReordering) {
-            console.log('⚠️ DOM is already in correct order - no reordering needed');
             return;
         }
         
-        console.log('🔄 DOM reordering IS needed - proceeding...');
-        
-        // Method 1: Clear and rebuild in correct order
-        // This is more reliable than trying to move elements
+        // Clear and rebuild in correct order
         const fragment = document.createDocumentFragment();
         const elementMap = new Map();
         
@@ -366,154 +408,12 @@ class DisplayLeaderboard {
             const element = elementMap.get(playerId);
             
             if (element) {
-                console.log(`↕️ Placing ${player.name} at DOM position ${targetIndex}`);
                 fragment.appendChild(element);
-            } else {
-                console.warn(`⚠️ Could not find DOM element for player ${playerId} (${player.name})`);
             }
         });
         
         // Add all elements back at once
         leaderboardList.appendChild(fragment);
-        
-        // Verify the new order
-        const finalOrder = Array.from(leaderboardList.children).map(el => el.getAttribute('data-player-id'));
-        console.log('📋 Final DOM order:', finalOrder);
-        console.log('✅ DOM reordering complete - verification:', finalOrder.every((id, index) => id === newOrder[index]) ? 'SUCCESS' : 'FAILED');
-    }
-
-    recordPositions() {
-        const leaderboardList = document.getElementById('leaderboardList');
-        const rows = Array.from(leaderboardList.children);
-        const positions = new Map();
-        
-        console.log('📍 Recording positions for', rows.length, 'rows');
-        
-        rows.forEach((row, index) => {
-            const playerId = row.getAttribute('data-player-id');
-            if (playerId) {
-                const rect = row.getBoundingClientRect();
-                const position = {
-                    element: row,
-                    top: rect.top,
-                    left: rect.left,
-                    width: rect.width,
-                    height: rect.height,
-                    domIndex: index
-                };
-                positions.set(playerId, position);
-                
-                console.log(`📍 Player ${playerId} at DOM index ${index}:`, {
-                    top: Math.round(rect.top),
-                    left: Math.round(rect.left)
-                });
-            }
-        });
-        
-        return positions;
-    }
-
-    calculateAnimationsImproved(oldPositions, newPositions, scoringPlayerId) {
-        const animations = [];
-        
-        console.log('🧮 Calculating animations with improved method...');
-        
-        for (const [playerId, newPos] of newPositions) {
-            const oldPos = oldPositions.get(playerId);
-            if (!oldPos) {
-                console.log(`⚠️ No old position found for player ${playerId}`);
-                continue;
-            }
-
-            const deltaX = oldPos.left - newPos.left;
-            const deltaY = oldPos.top - newPos.top;
-            
-            // Check if there's any movement or if this is the scoring player
-            const hasMovement = Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1;
-            const isScoringPlayer = playerId == scoringPlayerId;
-
-            console.log(`🔍 Player ${playerId}:`, {
-                deltaX: Math.round(deltaX),
-                deltaY: Math.round(deltaY),
-                hasMovement,
-                isScoringPlayer,
-                shouldAnimate: hasMovement || isScoringPlayer
-            });
-
-            // Animate if there's movement OR if this is the scoring player (for highlight effect)
-            if (hasMovement || isScoringPlayer) {
-                console.log(`✅ Will animate player ${playerId}`);
-                
-                // Apply the inversion transform immediately
-                newPos.element.style.transition = 'none';
-                newPos.element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                newPos.element.style.zIndex = '10';
-                
-                // Force reflow
-                newPos.element.offsetHeight;
-
-                animations.push({
-                    element: newPos.element,
-                    playerId,
-                    isScoring: isScoringPlayer,
-                    deltaX, 
-                    deltaY,
-                    hasMovement
-                });
-            } else {
-                console.log(`❌ No animation needed for player ${playerId}`);
-            }
-        }
-        
-        console.log(`🎬 Total animations prepared: ${animations.length}`);
-        return animations;
-    }
-
-    playAnimations(animations, trigger, newRank) {
-        console.log('🎭 Playing', animations.length, 'animations');
-        
-        // Start the animations
-        animations.forEach(({ element, playerId, isScoring, deltaX, deltaY, oldRank, newRank }) => {
-            console.log(`🎬 Starting animation for ${playerId}: ${Math.round(deltaX)}px, ${Math.round(deltaY)}px (${oldRank} → ${newRank})`);
-            
-            // Smooth transition for the sliding effect
-            element.style.transition = 'all 3.0s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            element.style.transform = 'translate(0px, 0px)';
-            element.style.zIndex = '1';
-            
-            if (isScoring) {
-                element.classList.add('player-updating');
-                console.log(`⭐ Highlighting scoring player: ${playerId}`);
-            }
-        });
-
-        console.log('⏰ Animation will complete in 3 seconds...');
-
-        // Clean up after animation completes
-        setTimeout(() => {
-            console.log('🧹 Cleaning up animations...');
-            
-            animations.forEach(({ element, isScoring, playerId }) => {
-                element.style.transition = '';
-                element.style.transform = '';
-                element.style.zIndex = '';
-                
-                if (isScoring) {
-                    element.classList.remove('player-updating');
-                }
-            });
-            
-            this.isAnimating = false;
-            console.log('✅ FLIP animation sequence completed');
-            
-            // Show popup with correct rank after movement animation
-            setTimeout(() => {
-                const player = this.players.find(p => p.id == trigger.playerId);
-                console.log(`🎉 Showing score popup for: ${player?.name} at rank ${newRank}`);
-                this.showScorePopup(player, trigger.score, newRank);
-            }, 300);
-            
-        }, 3000);
     }
 
     highlightPlayerAndShowPopup(player, score, rank) {
@@ -538,8 +438,6 @@ class DisplayLeaderboard {
     }
 
     showScorePopup(player, score, rank) {
-        console.log('🎉 Showing score popup for:', player?.name, 'Score:', score, 'Rank:', rank);
-        
         const overlay = document.getElementById('animationOverlay');
         const animation = document.getElementById('scoreAnimation');
         const photoElement = document.getElementById('animationPlayerPhoto');
@@ -563,7 +461,7 @@ class DisplayLeaderboard {
         const rankText = this.getRankText(rank);
         rankElement.textContent = rankText;
 
-        console.log(`🏆 Player ${player.name} is now rank ${rank}: ${rankText}`);
+        console.log(`🎉 Showing popup: ${player.name} at rank ${rank}`);
 
         // Show popup
         overlay.style.display = 'flex';
@@ -578,7 +476,6 @@ class DisplayLeaderboard {
             setTimeout(() => {
                 overlay.style.display = 'none';
                 // Update the leaderboard content with new scores
-                console.log('🔄 Updating leaderboard content with new scores');
                 this.updateLeaderboardSilent();
             }, 500);
         }, 4000);
@@ -594,9 +491,6 @@ class DisplayLeaderboard {
     }
 
     updateLeaderboardSilent() {
-        console.log('🔇 Silent leaderboard update - START');
-        console.log('🔇 About to render', this.players.length, 'players');
-        
         const leaderboardList = document.getElementById('leaderboardList');
         if (!leaderboardList) {
             console.error('❌ leaderboardList element not found!');
@@ -605,11 +499,9 @@ class DisplayLeaderboard {
         
         // Sort players by total score
         const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
-        console.log('🔇 Sorted players:', sortedPlayers.map(p => `${p.name}: ${p.totalScore}`));
         
         // Clear and rebuild with updated scores
         leaderboardList.innerHTML = '';
-        console.log('🔇 Cleared leaderboard DOM');
         
         sortedPlayers.forEach((player, index) => {
             const rank = index + 1;
@@ -638,7 +530,6 @@ class DisplayLeaderboard {
             `;
             
             leaderboardList.appendChild(playerRow);
-            console.log(`✅ Added player ${rank}: ${player.name} (ID: ${player.id}) to DOM`);
         });
         
         if (this.players.length === 0) {
@@ -649,26 +540,16 @@ class DisplayLeaderboard {
                         <div class="player-score">Wacht op de admin om spelers toe te voegen...</div>
                     </div>
                 </div>`;
-            console.log('🔇 Added "no players" message');
         }
-        
-        console.log('🔇 Final DOM children count:', leaderboardList.children.length);
-        console.log('🔇 Final DOM player IDs:', Array.from(leaderboardList.children).map(el => el.getAttribute('data-player-id')));
-        console.log('🔇 Silent leaderboard update - END');
     }
 
     createConfetti() {
-        console.log('🎊 createConfetti() called!');
-        
         if (typeof confetti === 'undefined') {
             console.error('❌ Canvas-confetti library not loaded!');
             return;
         }
 
-        console.log('✅ Canvas-confetti library is available');
-        console.log('🚀 Firing confetti from bottom corners to center!');
-
-        // Fire confetti from left bottom corner towards center
+        // Fire confetti from multiple angles for dramatic effect
         confetti({
             particleCount: 120,
             angle: 60,
@@ -696,28 +577,6 @@ class DisplayLeaderboard {
                 colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
             });
         }, 300);
-
-        setTimeout(() => {
-            confetti({
-                particleCount: 120,
-                angle: 315,
-                spread: 55,
-                origin: { x: 0.2, y: 0.0 },
-                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
-            });
-        }, 100);
-
-        setTimeout(() => {
-            confetti({
-                particleCount: 120,
-                angle: 225,
-                spread: 55,
-                origin: { x: 0.8, y: 0.0 },
-                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
-            });
-        }, 200);
-
-        console.log('✅ Canvas-confetti fired successfully!');
     }
 
     updateDisplay() {
@@ -728,7 +587,6 @@ class DisplayLeaderboard {
     }
 
     updateLeaderboard() {
-        console.log('🔄 updateLeaderboard() called');
         this.updateLeaderboardSilent();
     }
 
@@ -743,7 +601,7 @@ class DisplayLeaderboard {
 // Initialize the display leaderboard
 const displayLeaderboard = new DisplayLeaderboard();
 
-// Test functions
+// Test functions for debugging
 function testConfetti() {
     console.log('🧪 Testing confetti...');
     displayLeaderboard.createConfetti();
@@ -777,34 +635,5 @@ function testRoundAnimation() {
     displayLeaderboard.performRoundAnimation(fakeRoundTrigger);
 }
 
-// Debug function to manually check player count
-function debugPlayerCount() {
-    console.log('🔧 MANUAL DEBUG CHECK:');
-    displayLeaderboard.logPlayerCount();
-    
-    // Force refresh from localStorage
-    displayLeaderboard.loadData();
-    displayLeaderboard.updateDisplay();
-    
-    setTimeout(() => {
-        displayLeaderboard.logPlayerCount();
-    }, 500);
-}
-
-// Debug function to force show all players
-function forceShowAllPlayers() {
-    console.log('🔧 FORCING DISPLAY OF ALL PLAYERS');
-    const rawData = localStorage.getItem('sportsLeaderboard');
-    if (rawData) {
-        const data = JSON.parse(rawData);
-        console.log('🔧 Raw data has', data.players.length, 'players');
-        
-        displayLeaderboard.players = data.players;
-        displayLeaderboard.updateLeaderboardSilent();
-    }
-}
-
-console.log('📺 Display page loaded - Enhanced debugging enabled!');
+console.log('📺 Display page loaded!');
 console.log('🔧 Test functions: testConfetti(), testFLIPAnimation(), testRoundAnimation()');
-console.log('🔧 Debug functions: debugPlayerCount(), forceShowAllPlayers()');
-console.log('🔧 To debug: Open browser console and run debugPlayerCount() or forceShowAllPlayers()');
