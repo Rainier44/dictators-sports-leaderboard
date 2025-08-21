@@ -316,6 +316,15 @@ class DisplayLeaderboard {
     performOceanSplitAnimation(trigger, scoringPlayer, targetPosition, actualRank, finalRanking) {
         const leaderboardList = document.getElementById('leaderboardList');
         const scoringElement = leaderboardList.querySelector(`[data-player-id="${trigger.playerId}"]`);
+
+        console.log('🔍 Debug - Animation starting with:', {
+            playerId: trigger.playerId,
+            playerName: trigger.playerName,
+            score: trigger.score,
+            actualRank,
+            deltaY: targetPosition.deltaY,
+            scoringPlayerScore: scoringPlayer.totalScore
+        });
         
         if (!scoringElement) {
             console.error('❌ Could not find scoring player element');
@@ -324,6 +333,12 @@ class DisplayLeaderboard {
         }
         
         console.log('🌊 Phase 1: Player swims to target position');
+        
+        // Find current position of scoring player to determine who should move
+        const allElements = Array.from(leaderboardList.children);
+        const currentPosition = allElements.findIndex(el => el.getAttribute('data-player-id') == trigger.playerId) + 1;
+        
+        console.log(`Player moving from position ${currentPosition} to position ${actualRank}`);
         
         // Phase 1: Move the scoring player to their target position (no space yet)
         scoringElement.style.transition = 'none';
@@ -334,41 +349,128 @@ class DisplayLeaderboard {
         // Force reflow
         scoringElement.offsetHeight;
         
+        // Calculate timing based on distance for physics-like movement
+        const distance = Math.abs(targetPosition.deltaY);
+        const minTime = 2.0; // minimum animation time (seconds)
+        const maxTime = 5.0; // maximum animation time (seconds)
+        const baseSpeed = 100; // pixels per second
+
+        // Calculate time based on distance, but keep it within reasonable bounds
+        let animationTime = Math.max(minTime, Math.min(maxTime, distance / baseSpeed));
+
+        // Use a custom cubic-bezier that simulates acceleration -> constant -> deceleration
+        // This bezier starts slow, speeds up quickly, stays fast, then slows down at the end
+        const physicsEasing = 'cubic-bezier(0.05, 0, 0.95, 1)';
+
+        console.log(`🏃‍♂️ Player movement: ${animationTime.toFixed(2)}s for ${distance}px distance`);
+
         // Start the movement to target position
-        scoringElement.style.transition = 'transform 2.0s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        scoringElement.style.transition = `transform ${animationTime}s ${physicsEasing}`;
         scoringElement.style.transform = `translate(${targetPosition.deltaX}px, ${targetPosition.deltaY}px)`;
         
-        // Phase 2: After player reaches position, split the ocean (make space)
+        // Phase 2: After player reaches position, smoothly split the ocean AT DESTINATION ONLY
         setTimeout(() => {
-            console.log('🌊 Phase 2: Splitting the ocean');
+            console.log('🌊 Phase 2: Smoothly splitting the ocean at destination');
             
-            // Update DOM to final order while player is floating
-            this.updateLeaderboardDOM(finalRanking);
+            // Only move elements that are at or after the DESTINATION position
+            // AND only if the player is moving UP in the rankings (to a lower position number)
+            const elementsToMoveDown = [];
             
-            // Reset player's transform since DOM is now correct
-            scoringElement.style.transition = 'transform 0.8s ease-out';
-            scoringElement.style.transform = 'translate(0px, 0px)';
+            if (actualRank < currentPosition) {
+                // Player is moving up - need to make space at destination
+                allElements.forEach((element, index) => {
+                    const elementPlayerId = element.getAttribute('data-player-id');
+                    const elementPosition = index + 1;
+                    
+                    // Skip the scoring player
+                    if (elementPlayerId == trigger.playerId) {
+                        return;
+                    }
+                    
+                    // Only move elements at or after the DESTINATION position
+                    if (elementPosition >= actualRank && elementPosition < currentPosition) {
+                        elementsToMoveDown.push({
+                            element: element,
+                            playerId: elementPlayerId,
+                            currentIndex: index
+                        });
+                    }
+                });
+            }
+            // If player is moving down (actualRank > currentPosition), no elements need to move
             
-        }, 1800);
+            console.log(`🌊 Moving ${elementsToMoveDown.length} elements down to make space`);
+            
+            if (elementsToMoveDown.length > 0) {
+                // Calculate row height for smooth movement
+                const rowHeight = scoringElement.getBoundingClientRect().height + 10; // 10px for margin
+                
+                // Smoothly animate elements moving down
+                elementsToMoveDown.forEach(({ element, playerId }) => {
+                    element.style.transition = 'transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    element.style.transform = `translateY(${rowHeight}px)`;
+                    element.style.zIndex = '5';
+                });
+            }
+            
+            // Phase 3: After the ocean has split, update DOM and settle player
+            setTimeout(() => {
+                console.log('🌊 Phase 3: Settling into final position');
+                
+                // First, get a reference to the scoring element before DOM update
+                const currentScoringElement = leaderboardList.querySelector(`[data-player-id="${trigger.playerId}"]`);
+                
+                // Update DOM to final order (this will put everything in correct positions)
+                this.updateLeaderboardDOM(finalRanking);
+                
+                // Get the scoring element after DOM update (it might be a different element now)
+                const newScoringElement = leaderboardList.querySelector(`[data-player-id="${trigger.playerId}"]`);
+                
+                // Reset all transforms for other elements since DOM is now correct
+                elementsToMoveDown.forEach(({ element }) => {
+                    // Only reset if the element still exists in the DOM
+                    if (element.parentNode) {
+                        element.style.transition = 'transform 0.5s ease-out';
+                        element.style.transform = 'translateY(0px)';
+                    }
+                });
+                
+                // For the scoring element, we need to handle it carefully
+                if (newScoringElement) {
+                    // Clear any existing transforms and transitions immediately
+                    newScoringElement.style.transition = 'none';
+                    newScoringElement.style.transform = 'translate(0px, 0px)';
+                    newScoringElement.style.zIndex = '';
+                    newScoringElement.classList.remove('player-updating');
+                    
+                    // Force reflow to ensure the reset takes effect
+                    newScoringElement.offsetHeight;
+                }
+                
+            }, (animationTime * 1000) + 1200); // Wait for ocean split animation to complete
+            
+        }, (animationTime * 1000) - 200);
         
-        // Phase 3: Cleanup and show popup
-        setTimeout(() => {
-            console.log('🌊 Phase 3: Ocean split complete');
+        // Phase 4: Final cleanup and show popup
+       setTimeout(() => {
+            console.log('🌊 Phase 4: Cleanup and show popup');
             
-            scoringElement.style.transition = '';
-            scoringElement.style.transform = '';
-            scoringElement.style.zIndex = '';
-            scoringElement.classList.remove('player-updating');
+            // Clean up all remaining transforms and transitions
+            const allElementsAfter = Array.from(leaderboardList.children);
+            allElementsAfter.forEach((element) => {
+                element.style.transition = '';
+                element.style.transform = '';
+                element.style.zIndex = '';
+                element.classList.remove('player-updating');
+            });
             
             this.isAnimating = false;
-            console.log('✅ Ocean split animation completed');
+            console.log('✅ Smooth ocean split animation completed');
             
-            // Show popup
-            setTimeout(() => {
-                this.showScorePopup(scoringPlayer, trigger.score, actualRank);
-            }, 300);
+            // Show popup immediately since the player is now in the correct position
+            this.showScorePopup(scoringPlayer, trigger.score, actualRank);
             
-        }, 3200);
+        }, (animationTime * 1000) + 1500); // Give a bit more time for everything to settle
     }
 
     updateLeaderboardDOM(sortedPlayers) {
@@ -577,6 +679,26 @@ class DisplayLeaderboard {
                 colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3', '#54A0FF']
             });
         }, 300);
+
+        setTimeout(() => {
+            confetti({
+                particleCount: 120,
+                angle: 315,                // Shoots down-right (315° = -45°)
+                spread: 55,
+                origin: { x: 0.2, y: 0.0 }, // Top left (x: 10%, y: 10%)
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+            });
+        }, 100);
+
+        setTimeout(() => {
+            confetti({
+                particleCount: 120,
+                angle: 225,                // Shoots down-left (225° = -135°)
+                spread: 55,
+                origin: { x: 0.8, y: 0.0 }, // Top right (x: 90%, y: 10%)
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+            });
+        }, 200);
     }
 
     updateDisplay() {
