@@ -6,7 +6,9 @@ class DisplayLeaderboard {
         this.lastRoundAnimationTimestamp = 0;
         this.isAnimating = false;
         this.isRoundAnimating = false;
-        this.gifIndex = 0;
+        
+        // Load gifIndex from localStorage to persist across page reloads
+        this.gifIndex = parseInt(localStorage.getItem('currentGifIndex')) || 0;
 
         // Available GIFs for round animations
         this.availableGifs = [
@@ -18,6 +20,8 @@ class DisplayLeaderboard {
             './gifs/fail3.gif',
             './gifs/fail4.gif',
         ];
+        
+        console.log('🎬 GIF rotation initialized with index:', this.gifIndex);
         
         this.loadData();
         this.updateDisplay();
@@ -188,11 +192,37 @@ class DisplayLeaderboard {
     }
 
     getNextGif() {
-        const selectedGif = this.availableGifs[this.gifIndex];
+        // Get the last used GIF to avoid repeats
+        const lastGif = localStorage.getItem('lastUsedGif');
+        
+        let selectedGif;
+        let attempts = 0;
+        
+        do {
+            selectedGif = this.availableGifs[this.gifIndex];
+            
+            // If it's the same as last time and we have more than 1 GIF, try next
+            if (selectedGif === lastGif && this.availableGifs.length > 1 && attempts < this.availableGifs.length) {
+                this.gifIndex = (this.gifIndex + 1) % this.availableGifs.length;
+                attempts++;
+            } else {
+                break;
+            }
+        } while (attempts < this.availableGifs.length);
+        
+        console.log('🎯 Current GIF index:', this.gifIndex);
+        console.log('🎯 Selected GIF:', selectedGif);
+        console.log('🎯 Last used GIF was:', lastGif);
+        
+        // Move to next index for next time
         this.gifIndex = (this.gifIndex + 1) % this.availableGifs.length;
         
-        console.log('🎯 Selected GIF (iterative):', selectedGif);
+        // Save both the new index and the selected GIF
+        localStorage.setItem('currentGifIndex', this.gifIndex.toString());
+        localStorage.setItem('lastUsedGif', selectedGif);
+        
         console.log('🔢 Next GIF index will be:', this.gifIndex);
+        console.log('💾 Saved to localStorage - index:', this.gifIndex, 'lastGif:', selectedGif);
         
         return selectedGif;
     }
