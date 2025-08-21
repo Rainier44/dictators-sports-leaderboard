@@ -23,6 +23,39 @@ class DisplayLeaderboard {
         this.loadData();
         this.updateDisplay();
         this.startWatching();
+        
+        // Add debugging info
+        this.logPlayerCount();
+    }
+
+    logPlayerCount() {
+        console.log('🔍 DEBUGGING PLAYER COUNT:');
+        console.log('📊 Total players loaded:', this.players.length);
+        console.log('📋 Player names:', this.players.map(p => p.name));
+        
+        // Check localStorage directly
+        const rawData = localStorage.getItem('sportsLeaderboard');
+        if (rawData) {
+            try {
+                const parsed = JSON.parse(rawData);
+                console.log('📦 Raw localStorage data players count:', parsed.players ? parsed.players.length : 0);
+                console.log('📦 Raw localStorage player names:', parsed.players ? parsed.players.map(p => p.name) : []);
+            } catch (e) {
+                console.error('❌ Error parsing localStorage:', e);
+            }
+        } else {
+            console.log('📦 No localStorage data found');
+        }
+        
+        // Check DOM elements
+        setTimeout(() => {
+            const leaderboardList = document.getElementById('leaderboardList');
+            if (leaderboardList) {
+                const domElements = leaderboardList.children.length;
+                console.log('🏠 DOM elements in leaderboard:', domElements);
+                console.log('🏠 DOM element player IDs:', Array.from(leaderboardList.children).map(el => el.getAttribute('data-player-id')));
+            }
+        }, 1000);
     }
 
     loadData() {
@@ -31,6 +64,12 @@ class DisplayLeaderboard {
             const data = JSON.parse(saved);
             this.players = data.players || [];
             this.currentRound = data.currentRound || 1;
+            
+            console.log('📥 Data loaded from localStorage:');
+            console.log('📊 Players count:', this.players.length);
+            console.log('📋 Current round:', this.currentRound);
+        } else {
+            console.log('📥 No saved data found in localStorage');
         }
     }
 
@@ -68,9 +107,11 @@ class DisplayLeaderboard {
 
             if (hasChanged && !this.isAnimating && !this.isRoundAnimating) {
                 console.log('📊 Data changed, updating display (no animation)');
+                console.log('📊 New player count:', data.players ? data.players.length : 0);
                 this.players = data.players || [];
                 this.currentRound = data.currentRound || 1;
                 this.updateDisplay();
+                this.logPlayerCount(); // Debug after update
             }
         }
     }
@@ -570,14 +611,22 @@ class DisplayLeaderboard {
     }
 
     updateLeaderboardSilent() {
-        console.log('🔇 Silent leaderboard update');
+        console.log('🔇 Silent leaderboard update - START');
+        console.log('🔇 About to render', this.players.length, 'players');
+        
         const leaderboardList = document.getElementById('leaderboardList');
+        if (!leaderboardList) {
+            console.error('❌ leaderboardList element not found!');
+            return;
+        }
         
         // Sort players by total score
         const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
+        console.log('🔇 Sorted players:', sortedPlayers.map(p => `${p.name}: ${p.totalScore}`));
         
         // Clear and rebuild with updated scores
         leaderboardList.innerHTML = '';
+        console.log('🔇 Cleared leaderboard DOM');
         
         sortedPlayers.forEach((player, index) => {
             const rank = index + 1;
@@ -606,6 +655,7 @@ class DisplayLeaderboard {
             `;
             
             leaderboardList.appendChild(playerRow);
+            console.log(`✅ Added player ${rank}: ${player.name} (ID: ${player.id}) to DOM`);
         });
         
         if (this.players.length === 0) {
@@ -616,7 +666,12 @@ class DisplayLeaderboard {
                         <div class="player-score">Wacht op de admin om spelers toe te voegen...</div>
                     </div>
                 </div>`;
+            console.log('🔇 Added "no players" message');
         }
+        
+        console.log('🔇 Final DOM children count:', leaderboardList.children.length);
+        console.log('🔇 Final DOM player IDs:', Array.from(leaderboardList.children).map(el => el.getAttribute('data-player-id')));
+        console.log('🔇 Silent leaderboard update - END');
     }
 
     createConfetti() {
@@ -693,6 +748,7 @@ class DisplayLeaderboard {
     }
 
     updateLeaderboard() {
+        console.log('🔄 updateLeaderboard() called');
         this.updateLeaderboardSilent();
     }
 
@@ -741,5 +797,34 @@ function testRoundAnimation() {
     displayLeaderboard.performRoundAnimation(fakeRoundTrigger);
 }
 
+// Debug function to manually check player count
+function debugPlayerCount() {
+    console.log('🔧 MANUAL DEBUG CHECK:');
+    displayLeaderboard.logPlayerCount();
+    
+    // Force refresh from localStorage
+    displayLeaderboard.loadData();
+    displayLeaderboard.updateDisplay();
+    
+    setTimeout(() => {
+        displayLeaderboard.logPlayerCount();
+    }, 500);
+}
+
+// Debug function to force show all players
+function forceShowAllPlayers() {
+    console.log('🔧 FORCING DISPLAY OF ALL PLAYERS');
+    const rawData = localStorage.getItem('sportsLeaderboard');
+    if (rawData) {
+        const data = JSON.parse(rawData);
+        console.log('🔧 Raw data has', data.players.length, 'players');
+        
+        displayLeaderboard.players = data.players;
+        displayLeaderboard.updateLeaderboardSilent();
+    }
+}
+
 console.log('📺 Display page loaded - Enhanced debugging enabled!');
 console.log('🔧 Test functions: testConfetti(), testFLIPAnimation(), testRoundAnimation()');
+console.log('🔧 Debug functions: debugPlayerCount(), forceShowAllPlayers()');
+console.log('🔧 To debug: Open browser console and run debugPlayerCount() or forceShowAllPlayers()');

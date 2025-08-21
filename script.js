@@ -7,6 +7,9 @@ class SportsLeaderboard {
     }
 
     addPlayer(name, photoFile = null) {
+        console.log('➕ ADDING PLAYER:', name);
+        console.log('📊 Players before add:', this.players.length);
+        
         if (!name.trim()) {
             alert('Voer een speler naam in!');
             return;
@@ -14,6 +17,7 @@ class SportsLeaderboard {
         
         if (this.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
             alert('Speler bestaat al!');
+            console.log('❌ Player already exists:', name);
             return;
         }
 
@@ -25,25 +29,103 @@ class SportsLeaderboard {
             photo: null
         };
 
+        console.log('👤 Created player object:', player);
+
         // Handle photo if provided
         if (photoFile) {
+            console.log('📸 Original file size:', Math.round(photoFile.size/1024), 'KB');
+            
+            // Check if compression function exists
+            if (typeof this.compressImage !== 'function') {
+                console.error('❌ compressImage function not found!');
+                alert('Error: Image compression not available. Add images without photos for now.');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = (e) => {
-                player.photo = e.target.result;
+                console.log('📸 Base64 size before compression:', Math.round(e.target.result.length/1024), 'KB');
+                
+                // Compress the image before saving
+                this.compressImage(e.target.result, (compressedImage) => {
+                    player.photo = compressedImage;
+                    console.log('📸 Compressed photo for:', player.name);
+                    this.players.push(player);
+                    console.log('📊 Players after add (with photo):', this.players.length);
+                    this.updateDisplay();
+                    this.saveData();
+                    
+                    // Clear inputs after successful save
+                    document.getElementById('playerName').value = '';
+                    document.getElementById('playerPhoto').value = '';
+                    console.log('✅ addPlayer() completed for:', name);
+                });
+            };
+            reader.onerror = (e) => {
+                console.error('❌ Photo read error:', e);
+                // Still add player without photo
                 this.players.push(player);
                 this.updateDisplay();
                 this.saveData();
+                
+                // Clear inputs
+                document.getElementById('playerName').value = '';
+                document.getElementById('playerPhoto').value = '';
+                console.log('✅ addPlayer() completed for:', name, '(without photo due to error)');
             };
             reader.readAsDataURL(photoFile);
         } else {
+            // No photo case
             this.players.push(player);
             this.updateDisplay();
             this.saveData();
+            
+            // Clear inputs
+            document.getElementById('playerName').value = '';
+            document.getElementById('playerPhoto').value = '';
+            console.log('✅ addPlayer() completed for:', name, '(no photo)');
         }
+    }
+
+    compressImage(dataUrl, callback) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
         
-        // Clear inputs
-        document.getElementById('playerName').value = '';
-        document.getElementById('playerPhoto').value = '';
+        img.onload = () => {
+            // Set small dimensions for leaderboard photos
+            const maxWidth = 500;
+            const maxHeight = 500;
+            
+            let { width, height } = img;
+            
+            // Calculate new dimensions (maintain aspect ratio)
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = (width * maxHeight) / height;
+                    height = maxHeight;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw and compress
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to compressed JPEG with 60% quality
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            console.log('📸 Compressed from', Math.round(dataUrl.length/1024), 'KB to', Math.round(compressedDataUrl.length/1024), 'KB');
+            callback(compressedDataUrl);
+        };
+        
+        img.src = dataUrl;
     }
 
     addScore(playerId, score) {
@@ -257,7 +339,27 @@ class SportsLeaderboard {
             players: this.players,
             currentRound: this.currentRound
         };
+        
+        // Add debugging
+        console.log('💾 SAVING DATA:', {
+            playerCount: this.players.length,
+            playerNames: this.players.map(p => p.name),
+            currentRound: this.currentRound
+        });
+        
         localStorage.setItem('sportsLeaderboard', JSON.stringify(data));
+        
+        // Verify the save worked
+        setTimeout(() => {
+            const saved = localStorage.getItem('sportsLeaderboard');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                console.log('✅ SAVE VERIFIED:', {
+                    savedPlayerCount: parsed.players.length,
+                    savedPlayerNames: parsed.players.map(p => p.name)
+                });
+            }
+        }, 100);
     }
 
     loadData() {
@@ -266,6 +368,13 @@ class SportsLeaderboard {
             const data = JSON.parse(saved);
             this.players = data.players || [];
             this.currentRound = data.currentRound || 1;
+            
+            // Add debugging
+            console.log('📖 ADMIN LOADED DATA:', {
+                playerCount: this.players.length,
+                playerNames: this.players.map(p => p.name),
+                currentRound: this.currentRound
+            });
         }
     }
 }
@@ -327,6 +436,40 @@ function testRoundAnimation() {
     alert('Test ronde animatie verstuurd naar display pagina!');
 }
 
+function debugSync() {
+    console.log('🔧 ADMIN DEBUG - Current state:');
+    console.log('📊 Admin players count:', leaderboard.players.length);
+    console.log('📋 Admin player names:', leaderboard.players.map(p => p.name));
+    
+    // Force save and check
+    leaderboard.saveData();
+    
+    // Check what's actually in localStorage
+    setTimeout(() => {
+        const raw = localStorage.getItem('sportsLeaderboard');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            console.log('📦 localStorage contains:', parsed.players.length, 'players');
+            console.log('📦 localStorage names:', parsed.players.map(p => p.name));
+        }
+    }, 200);
+}
+
+function forceReloadData() {
+    console.log('🔄 FORCING DATA RELOAD...');
+    
+    // Clear current data
+    leaderboard.players = [];
+    
+    // Reload from localStorage
+    leaderboard.loadData();
+    
+    // Update all displays
+    leaderboard.updateDisplay();
+    
+    console.log('✅ Reload complete. New player count:', leaderboard.players.length);
+    console.log('📋 New player names:', leaderboard.players.map(p => p.name));
+}
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
